@@ -22,6 +22,9 @@ class Navigation(navController: NavHostController) {
             popUpTo(Destination.Chat) {
                 inclusive = true
             }
+            popUpTo(Destination.SplashScreen) {
+                inclusive = true
+            }
         }
     }
 }

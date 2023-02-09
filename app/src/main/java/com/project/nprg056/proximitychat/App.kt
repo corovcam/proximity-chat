@@ -5,14 +5,10 @@ import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.google.firebase.auth.FirebaseAuth
 import com.project.nprg056.proximitychat.controller.Navigation
 import com.project.nprg056.proximitychat.util.Destination
 import com.project.nprg056.proximitychat.ui.theme.ProximityChatTheme
-import com.project.nprg056.proximitychat.view.AuthenticationView
-import com.project.nprg056.proximitychat.view.ChatView
-import com.project.nprg056.proximitychat.view.LoginView
-import com.project.nprg056.proximitychat.view.RegisterView
+import com.project.nprg056.proximitychat.view.*
 
 @Composable
 fun App() {
@@ -22,12 +18,17 @@ fun App() {
     ProximityChatTheme {
         NavHost(
             navController = navController,
-            startDestination =
-            if (FirebaseAuth.getInstance().currentUser != null)
+            startDestination = Destination.SplashScreen
+/*            if (FirebaseAuth.getInstance().currentUser != null)
                 Destination.Chat
             else
-                Destination.Authentication
+                Destination.Authentication*/
         ) {
+            composable(Destination.SplashScreen) {
+                SplashScreenView(
+                    home = actions.toHome
+                )
+            }
             composable(Destination.Authentication) {
                 AuthenticationView(
                     register = actions.toRegister,
