@@ -4,8 +4,11 @@ import androidx.navigation.NavHostController
 import com.project.nprg056.proximitychat.util.Destination
 
 class Navigation(navController: NavHostController) {
-    val home: () -> Unit = {
-        navController.navigate(Destination.Home) {
+    val toLogin: () -> Unit = { navController.navigate(Destination.Login) }
+    val toRegister: () -> Unit = { navController.navigate(Destination.Register) }
+    val navigateBack: () -> Unit = { navController.popBackStack() }
+    val toChat: () -> Unit = {
+        navController.navigate(Destination.Chat) {
             popUpTo(Destination.Login) {
                 inclusive = true
             }
@@ -14,7 +17,11 @@ class Navigation(navController: NavHostController) {
             }
         }
     }
-    val login: () -> Unit = { navController.navigate(Destination.Login) }
-    val register: () -> Unit = { navController.navigate(Destination.Register) }
-    val navigateBack: () -> Unit = { navController.popBackStack() }
+    val toHome: () -> Unit = {
+        navController.navigate(Destination.Authentication) {
+            popUpTo(Destination.Chat) {
+                inclusive = true
+            }
+        }
+    }
 }

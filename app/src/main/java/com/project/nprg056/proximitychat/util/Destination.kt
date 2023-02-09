@@ -4,5 +4,5 @@ object Destination {
     const val Authentication = "authentication"
     const val Register = "register"
     const val Login = "login"
-    const val Home = "home"
+    const val Chat = "home"
 }

@@ -24,62 +24,33 @@ fun App() {
             navController = navController,
             startDestination =
             if (FirebaseAuth.getInstance().currentUser != null)
-                Destination.Home
+                Destination.Chat
             else
                 Destination.Authentication
         ) {
             composable(Destination.Authentication) {
                 AuthenticationView(
-                    register = actions.register,
-                    login = actions.login
+                    register = actions.toRegister,
+                    login = actions.toLogin
                 )
             }
             composable(Destination.Register) {
                 RegisterView(
-                    home = actions.home,
+                    chat = actions.toChat,
                     back = actions.navigateBack
                 )
             }
             composable(Destination.Login) {
                 LoginView(
-                    home = actions.home,
+                    chat = actions.toChat,
                     back = actions.navigateBack
                 )
             }
-            composable(Destination.Home) {
-                ChatView()
+            composable(Destination.Chat) {
+                ChatView(
+                    home = actions.toHome
+                )
             }
         }
     }
 }
-
-/*
-@Preview(
-    showBackground = true
-)
-@Composable
-fun PreviewAuth() {
-    AuthenticationView(register = )
-}
-
-@Preview(
-    showBackground = true
-)
-@Composable
-fun PreviewRegistration() {
-    RegisterView(
-        home = actions.home,
-        back = actions.navigateBack
-    )
-}
-
-@Preview(
-    showBackground = true
-)
-@Composable
-fun PreviewLogin() {
-    LoginView(
-        home = actions.home,
-        back = actions.navigateBack
-    )
-}*/

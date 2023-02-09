@@ -16,11 +16,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.project.nprg056.proximitychat.util.Constants
+import com.project.nprg056.proximitychat.view.composables.Appbar
 import com.project.nprg056.proximitychat.view.composables.SingleMessage
 import com.project.nprg056.proximitychat.viewmodel.ChatViewModel
 
 @Composable
 fun ChatView(
+    home: () -> Unit = {},
     chatViewModel: ChatViewModel = viewModel()
 ) {
     val message: String by chatViewModel.message.observeAsState(initial = "")
@@ -33,6 +35,10 @@ fun ChatView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
     ) {
+        Appbar(
+            title = "Chat",
+            action = home
+        )
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -44,10 +50,19 @@ fun ChatView(
             items(messages) { message ->
                 val isCurrentUser = message[Constants.IS_CURRENT_USER] as Boolean
 
-                SingleMessage(
-                    message = message[Constants.MESSAGE].toString(),
-                    isCurrentUser = isCurrentUser
-                )
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement =
+                    if (isCurrentUser)
+                        Arrangement.End
+                    else
+                        Arrangement.Start
+                ) {
+                    SingleMessage(
+                        message = message[Constants.MESSAGE].toString(),
+                        isCurrentUser = isCurrentUser
+                    )
+                }
             }
         }
         OutlinedTextField(

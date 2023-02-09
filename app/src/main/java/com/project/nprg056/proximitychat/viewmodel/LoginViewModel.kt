@@ -32,7 +32,7 @@ class LoginViewModel : ViewModel() {
     }
 
     // Register user
-    fun loginUser(home: () -> Unit) {
+    fun loginUser(toChatView: () -> Unit) {
         if (_loading.value == false) {
             val email: String = _email.value ?: throw IllegalArgumentException("email expected")
             val password: String =
@@ -43,7 +43,7 @@ class LoginViewModel : ViewModel() {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener {
                     if (it.isSuccessful)
-                        home()
+                        toChatView()
                     else
                         Log.w("Login fail: ", it.exception)
                     _loading.value = false
