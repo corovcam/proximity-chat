@@ -6,6 +6,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.project.nprg056.proximitychat.controller.Navigation
 import com.project.nprg056.proximitychat.util.Destination
 import com.project.nprg056.proximitychat.ui.theme.ProximityChatTheme
@@ -13,7 +14,9 @@ import com.project.nprg056.proximitychat.view.*
 import com.project.nprg056.proximitychat.viewmodel.QueueViewModel
 
 @Composable
-fun App() {
+fun App(
+    fusedLocationClient: FusedLocationProviderClient
+) {
     val navController = rememberNavController()
     val actions = remember(navController) { Navigation(navController) }
     val queueViewModel: QueueViewModel = viewModel()
@@ -31,7 +34,8 @@ fun App() {
             composable(Destination.StartScreen) {
                 StartScreenView(
                     toQueue = actions.toQueue,
-                    queueViewModel = queueViewModel
+                    queueViewModel = queueViewModel,
+                    fusedLocationClient = fusedLocationClient
                 )
             }
             composable(Destination.Queue) {

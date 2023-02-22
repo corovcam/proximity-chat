@@ -22,9 +22,6 @@ class QueueViewModel : ViewModel() {
 
     // Register user
     fun registerUser() {
-//        if (_loading.value == false) {
-//            // TODO("API")
-//        }
     }
 
     fun getChatRoom() {
