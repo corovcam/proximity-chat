@@ -24,8 +24,10 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
+import com.project.nprg056.proximitychat.model.LocationDetail
 import com.project.nprg056.proximitychat.view.composables.Buttons
 import com.project.nprg056.proximitychat.view.composables.InputTextField
+import com.project.nprg056.proximitychat.view.composables.LoadingDialog
 import com.project.nprg056.proximitychat.view.composables.Title
 import com.project.nprg056.proximitychat.viewmodel.QueueViewModel
 
@@ -36,6 +38,9 @@ fun StartScreenView(
     fusedLocationClient: FusedLocationProviderClient
 )
 {
+    val userName: String by queueViewModel.userName.observeAsState("")
+    val loading: Boolean by queueViewModel.loading.observeAsState(initial = false)
+
     val context = LocalContext.current
     val permissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -43,18 +48,31 @@ fun StartScreenView(
     )
 
     val obtainCurrentLocation = {
+        queueViewModel.updateLoadingStatus(true)
         fusedLocationClient
             .getCurrentLocation(
                 LocationRequest.PRIORITY_HIGH_ACCURACY,
                 object : CancellationToken() {
-                    override fun onCanceledRequested(p0: OnTokenCanceledListener) = CancellationTokenSource().token
+                    override fun onCanceledRequested(p0: OnTokenCanceledListener) =
+                        CancellationTokenSource().token
                     override fun isCancellationRequested() = false
                 }
             )
             .addOnSuccessListener { location ->
-                Log.w("Location", "${location?.latitude} ${location?.longitude}")
-                queueViewModel.registerUser()
-                toQueue()
+                if (location != null) {
+                    Log.w("Location", "${location.latitude} ${location.longitude}")
+                    queueViewModel.registerUser(
+                        LocationDetail(location.latitude.toString(), location.longitude.toString())
+                    )
+                    queueViewModel.updateLoadingStatus(false)
+                    toQueue()
+                } else {
+                    Toast.makeText(
+                        context, "Check your GPS/Network settings and try again.",
+                        Toast.LENGTH_LONG)
+                        .show()
+                }
+                queueViewModel.updateLoadingStatus(false)
             }
     }
 
@@ -72,45 +90,44 @@ fun StartScreenView(
         }
     }
 
-    val userName: String by queueViewModel.userName.observeAsState("")
-    val loading: Boolean by queueViewModel.loading.observeAsState(initial = false)
-
     Surface(color = MaterialTheme.colorScheme.surface) {
-        if (loading) {
-            CircularProgressIndicator()
-        }
-        Column(
+        Box(
             modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Bottom
+            contentAlignment = Alignment.Center
         ) {
-            Title(title = "Proximity Chat")
-            InputTextField(
-                value = userName,
-                onValueChange = { queueViewModel.updateUserName(it) },
-                label = "User Name",
-                keyboardType = KeyboardType.Text,
-                visualTransformation = VisualTransformation.None
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-            Buttons(
-                title = "Start chatting",
-                onClick = {
-                    if (permissions.all {
-                            ContextCompat.checkSelfPermission(
-                                context,
-                                it
-                            ) == PackageManager.PERMISSION_GRANTED
-                        }) {
+            LoadingDialog(isShowingDialog = loading)
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Bottom
+            ) {
+                Title(title = "Proximity Chat")
+                InputTextField(
+                    value = userName,
+                    onValueChange = { queueViewModel.updateUserName(it) },
+                    label = "User Name",
+                    keyboardType = KeyboardType.Text,
+                    visualTransformation = VisualTransformation.None
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                Buttons(
+                    title = "Start chatting",
+                    onClick = {
+                        if (permissions.all {
+                                ContextCompat.checkSelfPermission(
+                                    context,
+                                    it
+                                ) == PackageManager.PERMISSION_GRANTED
+                            }) {
                             obtainCurrentLocation()
+                        } else {
+                            launcherMultiplePermissions.launch(permissions)
                         }
-                    else {
-                        launcherMultiplePermissions.launch(permissions)
-                    }
-                },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            )
+                    },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            }
         }
     }
 }

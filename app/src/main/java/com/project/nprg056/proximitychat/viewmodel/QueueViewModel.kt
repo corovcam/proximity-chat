@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.project.nprg056.proximitychat.model.LocationDetail
 
 class QueueViewModel : ViewModel() {
     private val _userName = MutableLiveData("")
@@ -20,8 +21,12 @@ class QueueViewModel : ViewModel() {
         _userName.value = newUserName
     }
 
+    fun updateLoadingStatus(newLoadingStatus: Boolean) {
+        _loading.value = newLoadingStatus
+    }
+
     // Register user
-    fun registerUser() {
+    fun registerUser(locationDetail: LocationDetail) {
     }
 
     fun getChatRoom() {

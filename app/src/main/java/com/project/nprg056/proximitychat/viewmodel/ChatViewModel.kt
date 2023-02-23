@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.project.nprg056.proximitychat.util.Constants
@@ -31,7 +30,7 @@ class ChatViewModel : ViewModel() {
             Firebase.firestore.collection(Constants.MESSAGES).document().set(
                 hashMapOf(
                     Constants.MESSAGE to message,
-                    Constants.SENT_BY to Firebase.auth.currentUser?.uid,
+                    Constants.SENT_BY to "0",
                     Constants.SENT_ON to System.currentTimeMillis()
                 )
             ).addOnSuccessListener {
@@ -55,7 +54,7 @@ class ChatViewModel : ViewModel() {
                     for (doc in value) {
                         val data = doc.data
                         data[Constants.IS_CURRENT_USER] =
-                            Firebase.auth.currentUser?.uid.toString() == data[Constants.SENT_BY].toString()
+                            "0" == data[Constants.SENT_BY].toString()
 
                         list.add(data)
                     }
