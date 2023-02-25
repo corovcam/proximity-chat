@@ -62,17 +62,17 @@ fun StartScreenView(
                 if (location != null) {
                     Log.w("Location", "${location.latitude} ${location.longitude}")
                     queueViewModel.registerUser(
-                        LocationDetail(location.latitude.toString(), location.longitude.toString())
+                        LocationDetail(location.latitude.toString(), location.longitude.toString()),
+                        context = context,
+                        toQueue = toQueue
                     )
-                    queueViewModel.updateLoadingStatus(false)
-                    toQueue()
                 } else {
                     Toast.makeText(
                         context, "Check your GPS/Network settings and try again.",
                         Toast.LENGTH_LONG)
                         .show()
+                    queueViewModel.updateLoadingStatus(false)
                 }
-                queueViewModel.updateLoadingStatus(false)
             }
     }
 

@@ -1,7 +1,8 @@
 package com.project.nprg056.proximitychat.model
 
+import com.google.gson.annotations.SerializedName
+
 data class User(
-    val userId: String = "",
-    val userName: String = "",
-    val location: LocationDetail,
+    @SerializedName("user-name") val userName: String = "",
+    @SerializedName("user-location") val location: LocationDetail?,
 )
