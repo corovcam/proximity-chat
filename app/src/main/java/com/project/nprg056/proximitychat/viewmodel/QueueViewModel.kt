@@ -13,8 +13,11 @@ import com.project.nprg056.proximitychat.model.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-class QueueViewModel : ViewModel() {
+class QueueViewModel(val context: Context) : ViewModel() {
     private val _userName = MutableLiveData("")
     val userName: LiveData<String> = _userName
 
@@ -35,17 +38,17 @@ class QueueViewModel : ViewModel() {
         _loading.value = newLoadingStatus
     }
 
-    // Register user
-    fun registerUser(locationDetail: LocationDetail, context: Context, toQueue: () -> Unit) {
-        val showErrorMessage = {
-            _loading.value = false
-            Log.w("Register User failure", "User registration unsuccessful")
-            Toast.makeText(
-                context, "User registration unsuccessful. Please try again.",
-                Toast.LENGTH_LONG)
-                .show()
-        }
+    private fun showErrorMessage(message: String) {
+        _loading.value = false
+        Log.w("Register User failure", "User registration unsuccessful")
+        Toast.makeText(
+            context, "User registration unsuccessful. Please try again.",
+            Toast.LENGTH_LONG)
+            .show()
+    }
 
+    // Register user
+    fun registerUser(locationDetail: LocationDetail, toQueue: () -> Unit) {
         viewModelScope.launch {
             try {
                 val response = apiService.registerUser(User(_userName.value!!, locationDetail))
@@ -57,13 +60,42 @@ class QueueViewModel : ViewModel() {
                         toQueue()
                     }
                 } else {
-                    showErrorMessage()
+                    Log.w("Register User failure", "User registration unsuccessful")
+                    showErrorMessage("User registration unsuccessful. Please try again.")
                 }
             } catch (e: Exception) {
                 Log.e("Register User ERROR", e.message!!)
-                showErrorMessage()
+                showErrorMessage("User registration unsuccessful. Please try again.")
             }
         }
+    }
+
+    fun deleteUser() {
+        val userId = _userId.value
+        viewModelScope.launch {
+            if (_userId.value.isNullOrEmpty()) {
+                Log.w("UserId", "UserId is Empty")
+                return@launch
+            }
+            try {
+                val call = apiService.deleteUser(userId!!)
+                call.enqueue(object : Callback<Void> {
+                    override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                        if (response.code() == 200) {
+                            Log.w("Delete User", "User removed from the queue successfully")
+                        } else {
+                            Log.w("Delete User failure", response.toString())
+                        }
+                    }
+                    override fun onFailure(call: Call<Void>, t: Throwable) {
+                        Log.e("Delete User failure", t.message!!)
+                    }
+                })
+            } catch (e: Exception) {
+                Log.e("Delete User ERROR", e.toString())
+            }
+        }
+        _userId.value = ""
     }
 
     fun getChatRoom() {

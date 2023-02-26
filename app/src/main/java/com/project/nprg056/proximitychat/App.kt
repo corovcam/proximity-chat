@@ -2,6 +2,7 @@ package com.project.nprg056.proximitychat
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -19,7 +20,7 @@ fun App(
 ) {
     val navController = rememberNavController()
     val actions = remember(navController) { Navigation(navController) }
-    val queueViewModel: QueueViewModel = viewModel()
+    val queueViewModel = QueueViewModel(context = LocalContext.current)
 
     ProximityChatTheme {
         NavHost(

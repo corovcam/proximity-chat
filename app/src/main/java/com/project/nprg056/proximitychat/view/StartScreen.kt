@@ -25,10 +25,7 @@ import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
 import com.project.nprg056.proximitychat.model.LocationDetail
-import com.project.nprg056.proximitychat.view.composables.Buttons
-import com.project.nprg056.proximitychat.view.composables.InputTextField
-import com.project.nprg056.proximitychat.view.composables.LoadingDialog
-import com.project.nprg056.proximitychat.view.composables.Title
+import com.project.nprg056.proximitychat.view.composables.*
 import com.project.nprg056.proximitychat.viewmodel.QueueViewModel
 
 @Composable
@@ -63,7 +60,6 @@ fun StartScreenView(
                     Log.w("Location", "${location.latitude} ${location.longitude}")
                     queueViewModel.registerUser(
                         LocationDetail(location.latitude.toString(), location.longitude.toString()),
-                        context = context,
                         toQueue = toQueue
                     )
                 } else {

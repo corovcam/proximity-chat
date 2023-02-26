@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.project.nprg056.proximitychat.view.composables.Appbar
+import com.project.nprg056.proximitychat.view.composables.BackPressHandler
 import com.project.nprg056.proximitychat.view.composables.Buttons
 import com.project.nprg056.proximitychat.viewmodel.QueueViewModel
 
@@ -27,6 +28,10 @@ fun QueueView(
     val userName: String by queueViewModel.userName.observeAsState("")
     val loading: Boolean by queueViewModel.loading.observeAsState(initial = false)
 
+    BackPressHandler(onBackPressed = {
+        queueViewModel.deleteUser()
+        back()
+    })
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.surface
@@ -41,7 +46,10 @@ fun QueueView(
         ) {
             Appbar(
                 title = "Proximity Queue",
-                action = back
+                action = {
+                    queueViewModel.deleteUser()
+                    back()
+                }
             )
             Column(
                 verticalArrangement = Arrangement.Center,
