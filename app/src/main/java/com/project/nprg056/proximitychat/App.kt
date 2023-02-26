@@ -3,7 +3,6 @@ package com.project.nprg056.proximitychat
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -41,14 +40,15 @@ fun App(
             }
             composable(Destination.Queue) {
                 QueueView(
-                    chat = actions.toChat,
-                    back = actions.navigateBack,
+                    toChat = actions.toChatRoom,
+                    goBack = actions.navigateBack,
                     queueViewModel = queueViewModel
                 )
             }
-            composable(Destination.Chat) {
+            composable("${Destination.Chat}/{room-id}") { backStackEntry ->
                 ChatView(
-                    home = actions.toStartScreen
+                    roomId = backStackEntry.arguments?.getString("room-id"),
+                    goBack = actions.navigateBack
                 )
             }
         }

@@ -1,5 +1,6 @@
 package com.project.nprg056.proximitychat.view
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,80 +23,83 @@ import com.project.nprg056.proximitychat.viewmodel.ChatViewModel
 
 @Composable
 fun ChatView(
-    home: () -> Unit = {},
+    roomId: String?,
+    goBack: () -> Unit = {},
     chatViewModel: ChatViewModel = viewModel()
 ) {
     val message: String by chatViewModel.message.observeAsState(initial = "")
     val messages: List<Map<String, Any>> by chatViewModel.messages.observeAsState(
         initial = emptyList<Map<String, Any>>().toMutableList()
     )
-
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Bottom
-    ) {
-        Appbar(
-            title = "Chat",
-            action = home
-        )
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(weight = 0.85f, fill = true),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            reverseLayout = true
+    /*Log.w("roomId", roomId!!)*/
+    Surface(color = MaterialTheme.colorScheme.surface) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Bottom
         ) {
-            items(messages) { message ->
-                val isCurrentUser = message[Constants.IS_CURRENT_USER] as Boolean
+            Appbar(
+                title = "Chat",
+                action = goBack
+            )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(weight = 0.85f, fill = true),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                reverseLayout = true
+            ) {
+                items(messages) { message ->
+                    val isCurrentUser = message[Constants.IS_CURRENT_USER] as Boolean
 
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement =
-                    if (isCurrentUser)
-                        Arrangement.End
-                    else
-                        Arrangement.Start
-                ) {
-                    SingleMessage(
-                        message = message[Constants.MESSAGE].toString(),
-                        isCurrentUser = isCurrentUser
-                    )
-                }
-            }
-        }
-        OutlinedTextField(
-            value = message,
-            onValueChange = {
-                chatViewModel.updateMessage(it)
-            },
-            label = {
-                Text(
-                    "Type Your Message"
-                )
-            },
-            maxLines = 1,
-            modifier = Modifier
-                .padding(horizontal = 15.dp, vertical = 1.dp)
-                .fillMaxWidth()
-                .weight(weight = 0.09f, fill = true),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text
-            ),
-            singleLine = true,
-            trailingIcon = {
-                IconButton(
-                    onClick = {
-                        chatViewModel.addMessage()
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement =
+                        if (isCurrentUser)
+                            Arrangement.End
+                        else
+                            Arrangement.Start
+                    ) {
+                        SingleMessage(
+                            message = message[Constants.MESSAGE].toString(),
+                            isCurrentUser = isCurrentUser
+                        )
                     }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Send,
-                        contentDescription = "Send Button"
-                    )
                 }
             }
-        )
+            OutlinedTextField(
+                value = message,
+                onValueChange = {
+                    chatViewModel.updateMessage(it)
+                },
+                label = {
+                    Text(
+                        "Type Your Message"
+                    )
+                },
+                maxLines = 1,
+                modifier = Modifier
+                    .padding(horizontal = 15.dp, vertical = 1.dp)
+                    .fillMaxWidth()
+                    .weight(weight = 0.09f, fill = true),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text
+                ),
+                singleLine = true,
+                trailingIcon = {
+                    IconButton(
+                        onClick = {
+                            chatViewModel.addMessage()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Send,
+                            contentDescription = "Send Button"
+                        )
+                    }
+                }
+            )
+        }
     }
 }

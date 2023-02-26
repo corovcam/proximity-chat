@@ -2,6 +2,7 @@ package com.project.nprg056.proximitychat.view
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,8 +20,8 @@ import com.project.nprg056.proximitychat.viewmodel.QueueViewModel
 
 @Composable
 fun QueueView(
-    chat: () -> Unit = {},
-    back: () -> Unit = {},
+    toChat: (String) -> Unit = {},
+    goBack: () -> Unit = {},
     queueViewModel: QueueViewModel = viewModel()
 ) {
     val userName: String by queueViewModel.userName.observeAsState("")
@@ -28,42 +29,44 @@ fun QueueView(
 
     BackPressHandler(onBackPressed = {
         queueViewModel.deleteUser()
-        back()
+        goBack()
     })
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        LoadingDialog(isShowingDialog = loading)
-        Column(
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
+    Surface(color = MaterialTheme.colorScheme.surface) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            Appbar(
-                title = "Proximity Queue",
-                action = {
-                    queueViewModel.deleteUser()
-                    back()
-                }
-            )
+            LoadingDialog(isShowingDialog = loading)
             Column(
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxSize())
-            {
-                Text(
-                    text = "Welcome $userName. Click below to get started.",
-                    style = MaterialTheme.typography.titleMedium,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(30.dp)
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Appbar(
+                    title = "Proximity Queue",
+                    action = {
+                        queueViewModel.deleteUser()
+                        goBack()
+                    }
                 )
-                Spacer(modifier = Modifier.height(5.dp))
-                Buttons(
-                    title = "Find Closest Stranger",
-                    onClick = { queueViewModel.getChatRoom(back, chat)},
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxSize())
+                {
+                    Text(
+                        text = "Welcome $userName. Click below to get started.",
+                        style = MaterialTheme.typography.titleMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(30.dp)
+                    )
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Buttons(
+                        title = "Find Closest Stranger",
+                        onClick = { queueViewModel.getChatRoom(goBack, toChat)},
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         }
     }
