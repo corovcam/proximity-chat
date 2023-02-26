@@ -27,6 +27,9 @@ class QueueViewModel(val context: Context) : ViewModel() {
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
 
+    private val _buttonLocked = MutableLiveData(false)
+    val buttonLocked: LiveData<Boolean> = _buttonLocked
+
     private val apiService = APIService.buildService()
 
     // Update username
@@ -40,11 +43,7 @@ class QueueViewModel(val context: Context) : ViewModel() {
 
     private fun showErrorMessage(message: String) {
         _loading.value = false
-        Log.w("Register User failure", "User registration unsuccessful")
-        Toast.makeText(
-            context, "User registration unsuccessful. Please try again.",
-            Toast.LENGTH_LONG)
-            .show()
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
 
     // Register user
@@ -98,15 +97,39 @@ class QueueViewModel(val context: Context) : ViewModel() {
         _userId.value = ""
     }
 
-    fun getChatRoom() {
-        if (_loading.value == false) {
-            val userId: String? = _userId.value
-            if (userId.isNullOrEmpty())
-                Log.w("UserId", "UserId not set")
-//              Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
+    fun getChatRoom(goBack: () -> Unit, toChat: () -> Unit) {
+        if (_loading.value == true)
+            return
 
-//            _loading.value = true
-            // TODO("API")
+        val userId: String? = _userId.value
+        if (userId.isNullOrEmpty()) {
+            Log.w("UserId", "UserId not set")
+            showErrorMessage("User Session was terminated or expired. Please try again.")
+            goBack()
+        }
+
+        _loading.value = true
+        viewModelScope.launch {
+            try {
+                val response = apiService.getChatRoom(userId!!)
+                if (response != null) {
+                    Log.w("Room ID", response.roomId!!)
+                    _loading.value = false
+                    withContext(Dispatchers.Main) {
+                        toChat()
+                    }
+                } else {
+                    Log.w("Get Chat Room failure", "Unsuccessful")
+                    showErrorMessage(
+                        "There are no people in the queue at the moment. Please try again later."
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("Get Chat Room ERROR", e.message!!)
+                showErrorMessage(
+                    "Finding an available chat room was unsuccessful. Please try again later."
+                )
+            }
         }
     }
 }

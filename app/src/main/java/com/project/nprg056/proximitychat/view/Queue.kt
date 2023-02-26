@@ -1,9 +1,7 @@
 package com.project.nprg056.proximitychat.view
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,6 +14,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.project.nprg056.proximitychat.view.composables.Appbar
 import com.project.nprg056.proximitychat.view.composables.BackPressHandler
 import com.project.nprg056.proximitychat.view.composables.Buttons
+import com.project.nprg056.proximitychat.view.composables.LoadingDialog
 import com.project.nprg056.proximitychat.viewmodel.QueueViewModel
 
 @Composable
@@ -24,7 +23,6 @@ fun QueueView(
     back: () -> Unit = {},
     queueViewModel: QueueViewModel = viewModel()
 ) {
-    val userId: String by queueViewModel.userId.observeAsState("")
     val userName: String by queueViewModel.userName.observeAsState("")
     val loading: Boolean by queueViewModel.loading.observeAsState(initial = false)
 
@@ -32,13 +30,11 @@ fun QueueView(
         queueViewModel.deleteUser()
         back()
     })
-    Surface(
+    Box(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.surface
+        contentAlignment = Alignment.Center
     ) {
-        if (loading) {
-            CircularProgressIndicator()
-        }
+        LoadingDialog(isShowingDialog = loading)
         Column(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -65,7 +61,7 @@ fun QueueView(
                 Spacer(modifier = Modifier.height(5.dp))
                 Buttons(
                     title = "Find Closest Stranger",
-                    onClick = { /* TODO */ },
+                    onClick = { queueViewModel.getChatRoom(back, chat)},
                     containerColor = MaterialTheme.colorScheme.primary
                 )
             }

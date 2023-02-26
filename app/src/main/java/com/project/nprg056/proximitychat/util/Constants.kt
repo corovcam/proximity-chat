@@ -11,5 +11,5 @@ object Constants {
     const val IS_CURRENT_USER = "is_current_user"
 
     // API
-    const val BASE_URL = "https://63f789b7e40e087c9591346c.mockapi.io/"
+    const val BASE_URL = "https://proximity-chat.free.beeceptor.com/"
 }

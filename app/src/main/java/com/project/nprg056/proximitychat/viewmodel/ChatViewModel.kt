@@ -53,9 +53,7 @@ class ChatViewModel : ViewModel() {
                 if (value != null) {
                     for (doc in value) {
                         val data = doc.data
-                        data[Constants.IS_CURRENT_USER] =
-                            "0" == data[Constants.SENT_BY].toString()
-
+                        data[Constants.IS_CURRENT_USER] = true
                         list.add(data)
                     }
                 }
