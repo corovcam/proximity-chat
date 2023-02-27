@@ -13,7 +13,9 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.project.nprg056.proximitychat.util.Constants
 import com.project.nprg056.proximitychat.view.composables.Appbar
 import com.project.nprg056.proximitychat.view.composables.SingleMessage
@@ -21,15 +23,16 @@ import com.project.nprg056.proximitychat.viewmodel.ChatViewModel
 
 @Composable
 fun ChatView(
-    roomId: String?,
     goBack: () -> Unit = {},
-    chatViewModel: ChatViewModel = ChatViewModel(roomId)
+    chatViewModel: ChatViewModel = viewModel()
 ) {
     val message: String by chatViewModel.message.observeAsState(initial = "")
     val messages: List<Map<String, Any>> by chatViewModel.messages.observeAsState(
         initial = emptyList<Map<String, Any>>().toMutableList()
     )
-    /*Log.w("roomId", roomId!!)*/
+    val otherUserName: String by chatViewModel.otherUserName.observeAsState(initial = "")
+    val otherUserConnected: Boolean by chatViewModel.otherUserConnected.observeAsState(true)
+
     Surface(color = MaterialTheme.colorScheme.surface) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -37,7 +40,8 @@ fun ChatView(
             verticalArrangement = Arrangement.Bottom
         ) {
             Appbar(
-                title = "Chat",
+                title = if (otherUserName.isNotEmpty())
+                    "Chatting with: $otherUserName" else "Chat",
                 action = goBack
             )
             LazyColumn(
@@ -66,7 +70,19 @@ fun ChatView(
                     }
                 }
             }
+
+            if (!otherUserConnected)
+                Text(
+                    "User $otherUserName disconnected",
+                    modifier = Modifier
+                        .padding(horizontal = 15.dp, vertical = 1.dp)
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.titleMedium
+                )
+
             OutlinedTextField(
+                enabled = otherUserConnected,
                 value = message,
                 onValueChange = {
                     chatViewModel.updateMessage(it)

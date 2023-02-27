@@ -1,11 +1,6 @@
 package com.project.nprg056.proximitychat.view.composables
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
@@ -13,7 +8,8 @@ import androidx.compose.ui.window.DialogProperties
 fun LoadingDialog(
     isShowingDialog: Boolean,
     dismissOnBackPress: Boolean = false,
-    dismissOnClickOutside: Boolean = false
+    dismissOnClickOutside: Boolean = false,
+    content: @Composable () -> Unit = { DialogCircularProgressIndicator() }
 ) {
     if (isShowingDialog) {
         Dialog(
@@ -23,17 +19,7 @@ fun LoadingDialog(
                 dismissOnClickOutside = dismissOnClickOutside
             )
         ) {
-            DialogContent()
+            content()
         }
     }
-}
-
-@Composable
-fun DialogContent() {
-    CircularProgressIndicator(
-        modifier = Modifier
-            .size(200.dp),
-        strokeWidth = 10.dp,
-        color = MaterialTheme.colorScheme.primary
-    )
 }

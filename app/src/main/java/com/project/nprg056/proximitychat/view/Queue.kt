@@ -20,7 +20,7 @@ import com.project.nprg056.proximitychat.viewmodel.QueueViewModel
 
 @Composable
 fun QueueView(
-    toChat: (String) -> Unit = {},
+    toChat: (String, String) -> Unit,
     goBack: () -> Unit = {},
     queueViewModel: QueueViewModel = viewModel()
 ) {

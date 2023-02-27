@@ -97,7 +97,7 @@ class QueueViewModel(val context: Context) : ViewModel() {
         _userId.value = ""
     }
 
-    fun getChatRoom(goBack: () -> Unit, toChat: (String) -> Unit) {
+    fun getChatRoom(goBack: () -> Unit, toChat: (String, String) -> Unit) {
         if (_loading.value == true)
             return
 
@@ -116,7 +116,7 @@ class QueueViewModel(val context: Context) : ViewModel() {
                     Log.w("Room ID", response.roomId!!)
                     _loading.value = false
                     withContext(Dispatchers.Main) {
-                        toChat(response.roomId)
+                        toChat(response.roomId, userId)
                     }
                 } else {
                     Log.w("Get Chat Room failure", "Unsuccessful")

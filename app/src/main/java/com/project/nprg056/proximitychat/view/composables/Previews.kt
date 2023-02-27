@@ -35,6 +35,6 @@ fun PreviewSomeDialogContent() {
             .padding(20.dp),
         contentAlignment = Alignment.Center,
     ) {
-        DialogContent()
+        DialogCircularProgressIndicator()
     }
 }
