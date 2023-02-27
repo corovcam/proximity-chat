@@ -1,6 +1,5 @@
 package com.project.nprg056.proximitychat.view
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.project.nprg056.proximitychat.util.Constants
 import com.project.nprg056.proximitychat.view.composables.Appbar
 import com.project.nprg056.proximitychat.view.composables.SingleMessage
@@ -25,7 +23,7 @@ import com.project.nprg056.proximitychat.viewmodel.ChatViewModel
 fun ChatView(
     roomId: String?,
     goBack: () -> Unit = {},
-    chatViewModel: ChatViewModel = viewModel()
+    chatViewModel: ChatViewModel = ChatViewModel(roomId)
 ) {
     val message: String by chatViewModel.message.observeAsState(initial = "")
     val messages: List<Map<String, Any>> by chatViewModel.messages.observeAsState(
