@@ -1,6 +1,7 @@
 package com.project.nprg056.proximitychat.viewmodel
 
 import android.content.Context
+import android.location.Location
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.LiveData
@@ -16,8 +17,7 @@ import com.project.nprg056.proximitychat.util.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.pow
-import kotlin.math.sqrt
+import kotlin.math.roundToInt
 
 class QueueViewModel(val context: Context) : ViewModel() {
     private var db: DatabaseReference = Firebase.database(Constants.DB_URL).reference
@@ -33,6 +33,8 @@ class QueueViewModel(val context: Context) : ViewModel() {
     private val visited = mutableSetOf<String>()
 
     private var location = LocationDetail(0.0,0.0)
+
+    private var usersDistance = 0f
 
     private lateinit var listener: ValueEventListener
 
@@ -51,7 +53,11 @@ class QueueViewModel(val context: Context) : ViewModel() {
     }
 
     // Register user
-    fun registerUser(locationDetail: LocationDetail, toQueue: () -> Unit, goBack: () -> Unit, toChat: (String, String) -> Unit) {
+    fun registerUser(locationDetail: LocationDetail,
+                     toQueue: () -> Unit,
+                     goBack: () -> Unit,
+                     toChat: (String, String, String) -> Unit
+    ) {
         location = locationDetail
         viewModelScope.launch {
             _userId.value = db.push().key
@@ -71,17 +77,25 @@ class QueueViewModel(val context: Context) : ViewModel() {
         _userId.value = ""
     }
 
-    fun calcDistance(lat: Double, lon: Double): Double {
-        return sqrt((location.latitude!! - lat).pow(2.0) + (location.longitude!! - lon).pow(2.0))
+    fun calcDistance(lat: Double, lon: Double): Float {
+        val locationA = Location("User 1")
+        locationA.latitude = location.latitude!!
+        locationA.longitude = location.longitude!!
+
+        val locationB = Location("User 2")
+        locationB.latitude = lat
+        locationB.longitude = lon
+
+        return locationA.distanceTo(locationB)
     }
+
     fun joinQueue() {
         var foundId = ""
+        var distance = Float.MAX_VALUE
         db.child("queue").runTransaction(object : Transaction.Handler {
             override fun doTransaction(mutableData: MutableData): Transaction.Result {
-                var distance = Double.MAX_VALUE
-
                 for (doc in mutableData.children) {
-                    if(visited.contains(doc.key))
+                    if (visited.contains(doc.key))
                         continue
                     val loc = doc.getValue(LocationDetail::class.java)
                     val dist = calcDistance(loc?.latitude!!, loc.longitude!!)
@@ -92,7 +106,7 @@ class QueueViewModel(val context: Context) : ViewModel() {
                 }
 
                 if(foundId != "")
-                    mutableData.child(foundId).value = null;
+                    mutableData.child(foundId).value = null
                 else
                     mutableData.child(userId.value!!).value = location
 
@@ -108,13 +122,13 @@ class QueueViewModel(val context: Context) : ViewModel() {
                 if(databaseError == null && foundId != "") {
                     db.child("users/${userId.value}/roomId").setValue("${userId.value}___${foundId}")
                     db.child("users/${foundId}/roomId").setValue("${userId.value}___${foundId}")
+                    usersDistance = distance
                 }
             }
         })
-
     }
 
-    fun getChatRoom(goBack: () -> Unit, toChat: (String, String) -> Unit) {
+    private fun getChatRoom(goBack: () -> Unit, toChat: (String, String, String) -> Unit) {
         if (_loading.value == true)
             return
 
@@ -123,18 +137,22 @@ class QueueViewModel(val context: Context) : ViewModel() {
         listener = object: ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot){
                 val roomId: String = dataSnapshot.value.toString()
-                if(roomId != "") {
-                    val userIds = roomId!!.split("___")
-                    for(id in userIds) {
+                if (roomId != "") {
+                    val userIds = roomId.split("___")
+                    for (id in userIds) {
                         if (id != userId.value) {
                             visited.add(id)
                         }
                     }
-                    toChat(roomId, userId.value!!)
+                    toChat(roomId, userId.value!!, usersDistance.roundToInt().toString())
                 }
-                else if(visited.isNotEmpty()) {
+                else if (visited.isNotEmpty()) {
                     goBack()
                     joinQueue()
+                    Toast.makeText(context,
+                        "Disconnected from the chat. Looking for another match.",
+                        Toast.LENGTH_LONG)
+                        .show()
                 }
             }
             override fun onCancelled(error: DatabaseError) {
@@ -146,7 +164,7 @@ class QueueViewModel(val context: Context) : ViewModel() {
             }
         }
 
-       db.child("users/${userId.value.toString()}/roomId").addValueEventListener(listener)
+       db.child("users/${userId.value}/roomId").addValueEventListener(listener)
        joinQueue()
     }
 }

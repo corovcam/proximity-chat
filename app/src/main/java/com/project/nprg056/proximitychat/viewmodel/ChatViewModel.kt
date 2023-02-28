@@ -26,9 +26,6 @@ class ChatViewModel(
         getMessages()
     }
 
-    private val _otherUserConnected = MutableLiveData(true)
-    val otherUserConnected: LiveData<Boolean> = _otherUserConnected
-
     private val _otherUserName = MutableLiveData("")
     val otherUserName: LiveData<String> = _otherUserName
 
@@ -41,7 +38,7 @@ class ChatViewModel(
     fun leaveChat() {
         val userIds = roomId!!.split("___")
         for(id in userIds) {
-                db.child("users/${id}/roomId").setValue("")
+            db.child("users/${id}/roomId").setValue("")
         }
     }
     fun updateMessage(message: String) {
@@ -77,7 +74,7 @@ class ChatViewModel(
     }
 
     private fun getMessages() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             db.child(Constants.MESSAGES)
                 .child(roomId!!)
                 .orderByKey()

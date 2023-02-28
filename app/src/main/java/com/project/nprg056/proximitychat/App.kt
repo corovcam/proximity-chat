@@ -44,19 +44,22 @@ fun App(
             }
             composable(Destination.Queue) {
                 QueueView(
-                    toChat = actions.toChatRoom,
                     goBack = actions.navigateBack,
                     queueViewModel = queueViewModel
                 )
             }
             composable(
-                route = "${Destination.Chat}/{roomId}?userId={userId}",
-                arguments = listOf(navArgument("userId") { defaultValue = "" })
+                route = "${Destination.Chat}/{roomId}?userId={userId}&usersDistance={usersDistance}",
+                arguments = listOf(
+                    navArgument("userId") { defaultValue = "" },
+                    navArgument("usersDistance") { defaultValue = "" }
+                )
             ) { backStackEntry ->
                 ChatView(
+                    usersDistance = backStackEntry.arguments?.getString("usersDistance"),
                     chatViewModel = ChatViewModel(
                         roomId = backStackEntry.arguments?.getString("roomId"),
-                        userId = backStackEntry.arguments?.getString("userId")
+                        userId = backStackEntry.arguments?.getString("userId"),
                     )
                 )
             }

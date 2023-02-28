@@ -1,5 +1,6 @@
 package com.project.nprg056.proximitychat.view
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,7 +14,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.project.nprg056.proximitychat.util.Constants
@@ -24,6 +24,7 @@ import com.project.nprg056.proximitychat.viewmodel.ChatViewModel
 
 @Composable
 fun ChatView(
+    usersDistance: String? = null,
     chatViewModel: ChatViewModel = viewModel()
 ) {
     val message: String by chatViewModel.message.observeAsState(initial = "")
@@ -31,7 +32,6 @@ fun ChatView(
         initial = emptyList<Map<String, Any>>().toMutableList()
     )
     val otherUserName: String by chatViewModel.otherUserName.observeAsState(initial = "")
-    val otherUserConnected: Boolean by chatViewModel.otherUserConnected.observeAsState(true)
 
     BackPressHandler(onBackPressed = {
         chatViewModel.leaveChat()
@@ -45,6 +45,7 @@ fun ChatView(
             Appbar(
                 title = if (otherUserName.isNotEmpty())
                     "Chatting with: $otherUserName" else "Chat",
+                subTitle = if (usersDistance != null) "$usersDistance metres away" else null,
                 action = { chatViewModel.leaveChat() }
             )
             LazyColumn(
@@ -74,18 +75,7 @@ fun ChatView(
                 }
             }
 
-            if (!otherUserConnected)
-                Text(
-                    "User $otherUserName disconnected",
-                    modifier = Modifier
-                        .padding(horizontal = 15.dp, vertical = 1.dp)
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.titleMedium
-                )
-
             OutlinedTextField(
-                enabled = otherUserConnected,
                 value = message,
                 onValueChange = {
                     chatViewModel.updateMessage(it)

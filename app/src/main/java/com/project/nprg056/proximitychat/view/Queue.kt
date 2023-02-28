@@ -1,6 +1,7 @@
 package com.project.nprg056.proximitychat.view
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -19,7 +20,6 @@ import com.project.nprg056.proximitychat.viewmodel.QueueViewModel
 
 @Composable
 fun QueueView(
-    toChat: (String, String) -> Unit,
     goBack: () -> Unit = {},
     queueViewModel: QueueViewModel = viewModel()
 ) {
@@ -54,12 +54,16 @@ fun QueueView(
                     modifier = Modifier.fillMaxSize())
                 {
                     Text(
-                        text = "Welcome $userName. Please wait, we are searching for match.",
-                        style = MaterialTheme.typography.titleMedium,
+                        text = "Welcome${if (userName.isEmpty()) "" else " $userName"}. " +
+                                "Please wait, we are searching for the closest match.",
+                        style = MaterialTheme.typography.headlineSmall,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(30.dp)
                     )
-                    Spacer(modifier = Modifier.height(5.dp))
+                    CircularProgressIndicator(
+                        strokeWidth = 10.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }

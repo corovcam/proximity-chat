@@ -1,18 +1,22 @@
 package com.project.nprg056.proximitychat.view.composables
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.SmallTopAppBar
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 
 @Composable
-fun Appbar(title: String, action: () -> Unit) {
+fun Appbar(title: String, subTitle: String? = null, action: () -> Unit) {
     SmallTopAppBar(
         title = {
-            Text(text = title)
+            if (subTitle != null)
+                Column {
+                    Text(text = title)
+                    Text(text = subTitle, style = MaterialTheme.typography.titleSmall)
+                }
+            else
+                Text(text = title)
         },
         navigationIcon = {
             IconButton(

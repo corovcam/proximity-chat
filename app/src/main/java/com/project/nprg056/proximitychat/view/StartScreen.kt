@@ -31,7 +31,7 @@ import com.project.nprg056.proximitychat.viewmodel.QueueViewModel
 @Composable
 fun StartScreenView(
     toQueue: () -> Unit = {},
-    toChat: (String, String) -> Unit,
+    toChat: (String, String, String) -> Unit,
     goBack: () -> Unit = {},
     queueViewModel: QueueViewModel = viewModel(),
     fusedLocationClient: FusedLocationProviderClient
