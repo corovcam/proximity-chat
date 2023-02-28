@@ -66,8 +66,7 @@ class ChatViewModel(
         if (message.isNotEmpty()) {
             viewModelScope.launch(Dispatchers.IO) {
                 db.child(Constants.MESSAGES).child(roomId!!).push().setValue(
-                    Message(message, userId, System.currentTimeMillis().toString()
-                    )
+                    Message(message, userId, ServerValue.TIMESTAMP)
                 ).addOnSuccessListener {
                     _message.value = ""
                 }.addOnFailureListener{
@@ -81,7 +80,7 @@ class ChatViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             db.child(Constants.MESSAGES)
                 .child(roomId!!)
-                .orderByChild(Constants.TIMESTAMP)
+                .orderByKey()
                 .addValueEventListener(object : ValueEventListener {
                     override fun onDataChange(dataSnapshot: DataSnapshot) {
                         val list = emptyList<Map<String, Any>>().toMutableList()

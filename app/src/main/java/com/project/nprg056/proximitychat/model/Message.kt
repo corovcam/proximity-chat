@@ -6,5 +6,5 @@ import com.google.firebase.database.IgnoreExtraProperties
 data class Message(
     val message: String? = null,
     val userId: String? = null,
-    val timestamp: String? = null
+    val timestamp: Map<String, String>? = null // Server Timestamp
 )
