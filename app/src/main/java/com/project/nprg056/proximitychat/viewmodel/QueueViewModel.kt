@@ -16,6 +16,8 @@ import com.project.nprg056.proximitychat.util.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class QueueViewModel(val context: Context) : ViewModel() {
     private var db: DatabaseReference = Firebase.database(Constants.DB_URL).reference
@@ -27,9 +29,6 @@ class QueueViewModel(val context: Context) : ViewModel() {
 
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
-
-    private val _buttonLocked = MutableLiveData(false)
-    val buttonLocked: LiveData<Boolean> = _buttonLocked
 
     private val visited = mutableSetOf<String>()
 
@@ -73,7 +72,7 @@ class QueueViewModel(val context: Context) : ViewModel() {
     }
 
     fun calcDistance(lat: Double, lon: Double): Double {
-        return Math.sqrt(Math.pow(location.latitude!! - lat, 2.0)+Math.pow(location.longitude!! - lon, 2.0))
+        return sqrt((location.latitude!! - lat).pow(2.0) + (location.longitude!! - lon).pow(2.0))
     }
     fun joinQueue() {
         var foundId = ""

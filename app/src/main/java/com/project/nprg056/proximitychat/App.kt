@@ -54,7 +54,6 @@ fun App(
                 arguments = listOf(navArgument("userId") { defaultValue = "" })
             ) { backStackEntry ->
                 ChatView(
-                    goBack = actions.navigateBack,
                     chatViewModel = ChatViewModel(
                         roomId = backStackEntry.arguments?.getString("roomId"),
                         userId = backStackEntry.arguments?.getString("userId")

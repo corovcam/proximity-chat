@@ -24,7 +24,6 @@ import com.project.nprg056.proximitychat.viewmodel.ChatViewModel
 
 @Composable
 fun ChatView(
-    goBack: () -> Unit = {},
     chatViewModel: ChatViewModel = viewModel()
 ) {
     val message: String by chatViewModel.message.observeAsState(initial = "")

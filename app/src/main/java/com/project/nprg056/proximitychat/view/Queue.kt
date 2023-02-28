@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.project.nprg056.proximitychat.view.composables.Appbar
 import com.project.nprg056.proximitychat.view.composables.BackPressHandler
-import com.project.nprg056.proximitychat.view.composables.Buttons
 import com.project.nprg056.proximitychat.view.composables.LoadingDialog
 import com.project.nprg056.proximitychat.viewmodel.QueueViewModel
 
