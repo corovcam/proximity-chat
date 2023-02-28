@@ -60,9 +60,9 @@ class QueueViewModel(val context: Context) : ViewModel() {
             _userId.value = db.push().key
             db.child("users").child(_userId.value.toString()).setValue(User(userName.value.toString()))
             _loading.value = false
+            getChatRoom(goBack, toChat)
             withContext(Dispatchers.Main) {
                 toQueue()
-                getChatRoom(goBack, toChat)
             }
         }
     }
