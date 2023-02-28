@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.project.nprg056.proximitychat.util.Constants
 import com.project.nprg056.proximitychat.view.composables.Appbar
+import com.project.nprg056.proximitychat.view.composables.BackPressHandler
 import com.project.nprg056.proximitychat.view.composables.SingleMessage
 import com.project.nprg056.proximitychat.viewmodel.ChatViewModel
 
@@ -33,6 +34,9 @@ fun ChatView(
     val otherUserName: String by chatViewModel.otherUserName.observeAsState(initial = "")
     val otherUserConnected: Boolean by chatViewModel.otherUserConnected.observeAsState(true)
 
+    BackPressHandler(onBackPressed = {
+        chatViewModel.leaveChat()
+    })
     Surface(color = MaterialTheme.colorScheme.surface) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -42,7 +46,7 @@ fun ChatView(
             Appbar(
                 title = if (otherUserName.isNotEmpty())
                     "Chatting with: $otherUserName" else "Chat",
-                action = goBack
+                action = { chatViewModel.leaveChat() }
             )
             LazyColumn(
                 modifier = Modifier

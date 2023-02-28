@@ -36,6 +36,8 @@ fun App(
             composable(Destination.StartScreen) {
                 StartScreenView(
                     toQueue = actions.toQueue,
+                    toChat = actions.toChatRoom,
+                    goBack = actions.navigateBack,
                     queueViewModel = queueViewModel,
                     fusedLocationClient = fusedLocationClient
                 )

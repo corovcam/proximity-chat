@@ -7,17 +7,18 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.project.nprg056.proximitychat.api.APIService
+import com.google.firebase.database.*
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import com.project.nprg056.proximitychat.model.LocationDetail
 import com.project.nprg056.proximitychat.model.User
+import com.project.nprg056.proximitychat.util.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class QueueViewModel(val context: Context) : ViewModel() {
+    private var db: DatabaseReference = Firebase.database(Constants.DB_URL).reference
     private val _userName = MutableLiveData("")
     val userName: LiveData<String> = _userName
 
@@ -30,7 +31,11 @@ class QueueViewModel(val context: Context) : ViewModel() {
     private val _buttonLocked = MutableLiveData(false)
     val buttonLocked: LiveData<Boolean> = _buttonLocked
 
-    private val apiService = APIService.buildService()
+    private val visited = mutableSetOf<String>()
+
+    private var location = LocationDetail(0.0,0.0)
+
+    private lateinit var listener: ValueEventListener
 
     // Update username
     fun updateUserName(newUserName: String) {
@@ -47,89 +52,102 @@ class QueueViewModel(val context: Context) : ViewModel() {
     }
 
     // Register user
-    fun registerUser(locationDetail: LocationDetail, toQueue: () -> Unit) {
+    fun registerUser(locationDetail: LocationDetail, toQueue: () -> Unit, goBack: () -> Unit, toChat: (String, String) -> Unit) {
+        location = locationDetail
         viewModelScope.launch {
-            try {
-                val response = apiService.registerUser(User(_userName.value!!, locationDetail))
-                if (response != null) {
-                    _userId.value = response.userId
-                    Log.w("User ID", response.userId!!)
-                    _loading.value = false
-                    withContext(Dispatchers.Main) {
-                        toQueue()
-                    }
-                } else {
-                    Log.w("Register User failure", "User registration unsuccessful")
-                    showErrorMessage("User registration unsuccessful. Please try again.")
-                }
-            } catch (e: Exception) {
-                Log.e("Register User ERROR", e.message!!)
-                showErrorMessage("User registration unsuccessful. Please try again.")
+            _userId.value = db.push().key
+            db.child("users").child(_userId.value.toString()).setValue(User(userName.value.toString()))
+            _loading.value = false
+            withContext(Dispatchers.Main) {
+                toQueue()
+                getChatRoom(goBack, toChat)
             }
         }
     }
 
     fun deleteUser() {
         val userId = _userId.value
-        viewModelScope.launch {
-            if (_userId.value.isNullOrEmpty()) {
-                Log.w("UserId", "UserId is Empty")
-                return@launch
-            }
-            try {
-                val call = apiService.deleteUser(userId!!)
-                call.enqueue(object : Callback<Void> {
-                    override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                        if (response.code() == 200) {
-                            Log.w("Delete User", "User removed from the queue successfully")
-                        } else {
-                            Log.w("Delete User failure", response.toString())
-                        }
-                    }
-                    override fun onFailure(call: Call<Void>, t: Throwable) {
-                        Log.e("Delete User failure", t.message!!)
-                    }
-                })
-            } catch (e: Exception) {
-                Log.e("Delete User ERROR", e.toString())
-            }
-        }
+        db.child("users/${userId}/roomId").removeEventListener(listener)
+        db.child("queue/${userId}").removeValue()
         _userId.value = ""
+    }
+
+    fun calcDistance(lat: Double, lon: Double): Double {
+        return Math.sqrt(Math.pow(location.latitude!! - lat, 2.0)+Math.pow(location.longitude!! - lon, 2.0))
+    }
+    fun joinQueue() {
+        var foundId = ""
+        db.child("queue").runTransaction(object : Transaction.Handler {
+            override fun doTransaction(mutableData: MutableData): Transaction.Result {
+                var distance = Double.MAX_VALUE
+
+                for (doc in mutableData.children) {
+                    if(visited.contains(doc.key))
+                        continue
+                    val loc = doc.getValue(LocationDetail::class.java)
+                    val dist = calcDistance(loc?.latitude!!, loc.longitude!!)
+                    if(dist < distance) {
+                        foundId = doc.key!!
+                        distance = dist
+                    }
+                }
+
+                if(foundId != "")
+                    mutableData.child(foundId).value = null;
+                else
+                    mutableData.child(userId.value!!).value = location
+
+                // Set value and report transaction success
+                return Transaction.success(mutableData)
+            }
+
+            override fun onComplete(
+                databaseError: DatabaseError?,
+                committed: Boolean,
+                currentData: DataSnapshot?
+            ){
+                if(databaseError == null && foundId != "") {
+                    db.child("users/${userId.value}/roomId").setValue("${userId.value}___${foundId}")
+                    db.child("users/${foundId}/roomId").setValue("${userId.value}___${foundId}")
+                }
+            }
+        })
+
     }
 
     fun getChatRoom(goBack: () -> Unit, toChat: (String, String) -> Unit) {
         if (_loading.value == true)
             return
 
-        val userId: String? = _userId.value
-        if (userId.isNullOrEmpty()) {
-            Log.w("UserId", "UserId not set")
-            showErrorMessage("User Session was terminated or expired. Please try again.")
-            goBack()
-        }
+        visited.clear()
 
-        _loading.value = true
-        viewModelScope.launch {
-            try {
-                val response = apiService.getChatRoom(userId!!)
-                if (response != null) {
-                    Log.w("Room ID", response.roomId!!)
-                    _loading.value = false
-                    withContext(Dispatchers.Main) {
-                        toChat(response.roomId, userId)
+        listener = object: ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot){
+                val roomId: String = dataSnapshot.value.toString()
+                if(roomId != "") {
+                    val userIds = roomId!!.split("___")
+                    for(id in userIds) {
+                        if (id != userId.value) {
+                            visited.add(id)
+                        }
                     }
-                } else {
-                    Log.w("Get Chat Room failure", "Unsuccessful")
-                    showErrorMessage(
-                        "There are no people in the queue at the moment. Please try again later."
-                    )
+                    toChat(roomId, userId.value!!)
                 }
-            } catch (e: Exception) {
-                Log.e("Get Chat Room ERROR", e.message!!)
+                else if(visited.isNotEmpty()) {
+                    goBack()
+                    joinQueue()
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {
+                // Failed to read value
+                Log.w("Get Chat Room failure", "Unsuccessful")
                 showErrorMessage(
-                    "Finding an available chat room was unsuccessful. Please try again later."
+                    "There are no people in the queue at the moment. Please try again later."
                 )
             }
         }
+
+       db.child("users/${userId.value.toString()}/roomId").addValueEventListener(listener)
+       joinQueue()
     }
 }

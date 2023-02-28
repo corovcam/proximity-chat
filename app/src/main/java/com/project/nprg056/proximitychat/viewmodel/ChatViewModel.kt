@@ -22,7 +22,6 @@ class ChatViewModel(
     private var db: DatabaseReference = Firebase.database(Constants.DB_URL).reference
 
     init {
-        disconnectListener()
         getOtherUserName()
         getMessages()
     }
@@ -39,51 +38,27 @@ class ChatViewModel(
     private var _messages = MutableLiveData(emptyList<Map<String, Any>>().toMutableList())
     val messages: LiveData<MutableList<Map<String, Any>>> = _messages
 
-    private fun disconnectListener() {
-        viewModelScope.launch(Dispatchers.Default) {
-            db.child("rooms")
-                .child(roomId!!)
-                .child("users")
-                .addValueEventListener(object : ValueEventListener {
-                    override fun onDataChange(dataSnapshot: DataSnapshot) {
-                        val list = emptyList<Map<String, Any>>().toMutableList()
-
-                        for (doc in dataSnapshot.children) {
-                            val data = doc.getValue<Map<String, Any>>()!!.toMutableMap()
-                            data[Constants.IS_CURRENT_USER] = data[Constants.SENT_BY] == userId
-                            list.add(data)
-                        }
-
-                        updateMessages(list)
-                    }
-
-                    override fun onCancelled(databaseError: DatabaseError) {
-                        Log.e(Constants.TAG, "disconnectListener: listen failed.",
-                            databaseError.toException())
-                    }
-                })
+    fun leaveChat() {
+        val userIds = roomId!!.split("___")
+        for(id in userIds) {
+                db.child("users/${id}/roomId").setValue("")
         }
     }
-
     fun updateMessage(message: String) {
         _message.value = message
     }
 
     private fun getOtherUserName() {
-        db.child("rooms")
-            .child(roomId!!)
-            .child("users")
-            .get()
-            .addOnSuccessListener { data: DataSnapshot ->
-                for (doc in data.children) {
-                    if (doc.key != userId) {
-                        _otherUserName.value = doc.key.toString()
+        val userIds = roomId!!.split("___")
+        for(id in userIds) {
+            if (id != userId) {
+                db.child("users/${id}/userName")
+                    .get()
+                    .addOnSuccessListener {  data: DataSnapshot ->
+                        _otherUserName.value = data.value.toString()
                     }
-                }
-                Log.w("Firebase", "Other username: ${_otherUserName.value}")
-            }.addOnFailureListener{
-                Log.e("Firebase", "Error getting data", it)
             }
+        }
     }
 
     fun addMessage() {
@@ -91,7 +66,7 @@ class ChatViewModel(
         if (message.isNotEmpty()) {
             viewModelScope.launch(Dispatchers.IO) {
                 db.child(Constants.MESSAGES).child(roomId!!).push().setValue(
-                    Message(message, "0", System.currentTimeMillis().toString()
+                    Message(message, userId, System.currentTimeMillis().toString()
                     )
                 ).addOnSuccessListener {
                     _message.value = ""

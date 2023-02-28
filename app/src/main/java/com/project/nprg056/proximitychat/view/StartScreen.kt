@@ -31,6 +31,8 @@ import com.project.nprg056.proximitychat.viewmodel.QueueViewModel
 @Composable
 fun StartScreenView(
     toQueue: () -> Unit = {},
+    toChat: (String, String) -> Unit,
+    goBack: () -> Unit = {},
     queueViewModel: QueueViewModel = viewModel(),
     fusedLocationClient: FusedLocationProviderClient
 )
@@ -59,8 +61,10 @@ fun StartScreenView(
                 if (location != null) {
                     Log.w("Location", "${location.latitude} ${location.longitude}")
                     queueViewModel.registerUser(
-                        LocationDetail(location.latitude.toString(), location.longitude.toString()),
-                        toQueue = toQueue
+                        LocationDetail(location.latitude, location.longitude),
+                        toQueue = toQueue,
+                        toChat = toChat,
+                        goBack = goBack
                     )
                 } else {
                     Toast.makeText(

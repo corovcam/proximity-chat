@@ -4,5 +4,11 @@ import com.google.gson.annotations.SerializedName
 
 data class User(
     @SerializedName("user-name") val userName: String = "",
-    @SerializedName("user-location") val location: LocationDetail?,
-)
+    val roomId: String = ""
+){
+    init {
+        require(userName != null) {
+            "UserName and location cannot be null"
+        }
+    }
+}

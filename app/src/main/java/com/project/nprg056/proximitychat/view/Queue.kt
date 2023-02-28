@@ -55,17 +55,12 @@ fun QueueView(
                     modifier = Modifier.fillMaxSize())
                 {
                     Text(
-                        text = "Welcome $userName. Click below to get started.",
+                        text = "Welcome $userName. Please wait, we are searching for match.",
                         style = MaterialTheme.typography.titleMedium,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(30.dp)
                     )
                     Spacer(modifier = Modifier.height(5.dp))
-                    Buttons(
-                        title = "Find Closest Stranger",
-                        onClick = { queueViewModel.getChatRoom(goBack, toChat)},
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
                 }
             }
         }
