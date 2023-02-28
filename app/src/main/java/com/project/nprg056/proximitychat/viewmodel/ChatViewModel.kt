@@ -14,6 +14,7 @@ import com.project.nprg056.proximitychat.util.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
+import kotlin.math.roundToInt
 
 class ChatViewModel(
     private val roomId: String?,
@@ -23,11 +24,15 @@ class ChatViewModel(
 
     init {
         getOtherUserName()
+        getUsersDistance()
         getMessages()
     }
 
     private val _otherUserName = MutableLiveData("")
     val otherUserName: LiveData<String> = _otherUserName
+
+    private val _usersDistance = MutableLiveData<Int?>(null)
+    val usersDistance: LiveData<Int?> = _usersDistance
 
     private val _message = MutableLiveData("")
     val message: LiveData<String> = _message
@@ -53,6 +58,19 @@ class ChatViewModel(
                     .get()
                     .addOnSuccessListener {  data: DataSnapshot ->
                         _otherUserName.value = data.value.toString()
+                    }
+            }
+        }
+    }
+
+    private fun getUsersDistance() {
+        val userIds = roomId!!.split("___")
+        for (id in userIds) {
+            if (id != userId) {
+                db.child("users/${id}/usersDistance")
+                    .get()
+                    .addOnSuccessListener {  data: DataSnapshot ->
+                        _usersDistance.value = data.getValue(Double::class.java)?.roundToInt()
                     }
             }
         }

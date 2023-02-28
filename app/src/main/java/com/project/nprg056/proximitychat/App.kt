@@ -49,14 +49,12 @@ fun App(
                 )
             }
             composable(
-                route = "${Destination.Chat}/{roomId}?userId={userId}&usersDistance={usersDistance}",
+                route = "${Destination.Chat}/{roomId}?userId={userId}",
                 arguments = listOf(
-                    navArgument("userId") { defaultValue = "" },
-                    navArgument("usersDistance") { defaultValue = "" }
+                    navArgument("userId") { defaultValue = "" }
                 )
             ) { backStackEntry ->
                 ChatView(
-                    usersDistance = backStackEntry.arguments?.getString("usersDistance"),
                     chatViewModel = ChatViewModel(
                         roomId = backStackEntry.arguments?.getString("roomId"),
                         userId = backStackEntry.arguments?.getString("userId"),

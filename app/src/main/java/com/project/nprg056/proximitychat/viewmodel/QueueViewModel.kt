@@ -17,7 +17,6 @@ import com.project.nprg056.proximitychat.util.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.roundToInt
 
 class QueueViewModel(val context: Context) : ViewModel() {
     private var db: DatabaseReference = Firebase.database(Constants.DB_URL).reference
@@ -33,8 +32,6 @@ class QueueViewModel(val context: Context) : ViewModel() {
     private val visited = mutableSetOf<String>()
 
     private var location = LocationDetail(0.0,0.0)
-
-    private var usersDistance = 0f
 
     private lateinit var listener: ValueEventListener
 
@@ -56,7 +53,7 @@ class QueueViewModel(val context: Context) : ViewModel() {
     fun registerUser(locationDetail: LocationDetail,
                      toQueue: () -> Unit,
                      goBack: () -> Unit,
-                     toChat: (String, String, String) -> Unit
+                     toChat: (String, String) -> Unit
     ) {
         location = locationDetail
         viewModelScope.launch {
@@ -120,15 +117,19 @@ class QueueViewModel(val context: Context) : ViewModel() {
                 currentData: DataSnapshot?
             ){
                 if(databaseError == null && foundId != "") {
-                    db.child("users/${userId.value}/roomId").setValue("${userId.value}___${foundId}")
-                    db.child("users/${foundId}/roomId").setValue("${userId.value}___${foundId}")
-                    usersDistance = distance
+                    val updates: MutableMap<String, Any> = hashMapOf(
+                        "users/${userId.value}/roomId" to "${userId.value}___${foundId}",
+                        "users/${foundId}/roomId" to "${userId.value}___${foundId}",
+                        "users/${userId.value}/usersDistance" to distance.toDouble(),
+                        "users/${foundId}/usersDistance" to distance.toDouble()
+                    )
+                    db.updateChildren(updates)
                 }
             }
         })
     }
 
-    private fun getChatRoom(goBack: () -> Unit, toChat: (String, String, String) -> Unit) {
+    private fun getChatRoom(goBack: () -> Unit, toChat: (String, String) -> Unit) {
         if (_loading.value == true)
             return
 
@@ -144,7 +145,7 @@ class QueueViewModel(val context: Context) : ViewModel() {
                             visited.add(id)
                         }
                     }
-                    toChat(roomId, userId.value!!, usersDistance.roundToInt().toString())
+                    toChat(roomId, userId.value!!)
                 }
                 else if (visited.isNotEmpty()) {
                     goBack()

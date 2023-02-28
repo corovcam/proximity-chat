@@ -1,6 +1,5 @@
 package com.project.nprg056.proximitychat.view
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,15 +22,13 @@ import com.project.nprg056.proximitychat.view.composables.SingleMessage
 import com.project.nprg056.proximitychat.viewmodel.ChatViewModel
 
 @Composable
-fun ChatView(
-    usersDistance: String? = null,
-    chatViewModel: ChatViewModel = viewModel()
-) {
+fun ChatView(chatViewModel: ChatViewModel = viewModel()) {
     val message: String by chatViewModel.message.observeAsState(initial = "")
     val messages: List<Map<String, Any>> by chatViewModel.messages.observeAsState(
         initial = emptyList<Map<String, Any>>().toMutableList()
     )
     val otherUserName: String by chatViewModel.otherUserName.observeAsState(initial = "")
+    val usersDistance: Int? by chatViewModel.usersDistance.observeAsState(initial = null)
 
     BackPressHandler(onBackPressed = {
         chatViewModel.leaveChat()
