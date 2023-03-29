@@ -5,6 +5,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.project.nprg056.proximitychat.R
 
 @Composable
 fun Appbar(title: String, subTitle: String? = null, action: () -> Unit) {
@@ -24,7 +26,7 @@ fun Appbar(title: String, subTitle: String? = null, action: () -> Unit) {
             ) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
-                    contentDescription = "Back button"
+                    contentDescription = stringResource(R.string.back_button_description)
                 )
             }
         }

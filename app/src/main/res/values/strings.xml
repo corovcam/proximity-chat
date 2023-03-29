@@ -1,3 +1,19 @@
 <resources>
-    <string name="app_name">Proximity Chat</string>
+    <string name="app_name" translatable="false">Proximity Chat</string>
+    <string name="version_text">Version - %1$s</string>
+    <string name="check_gps_network_settings">Check your GPS/Network settings and try again.</string>
+    <string name="location_permission_request">Please turn on Location permission.</string>
+    <string name="user_name_label">User Name</string>
+    <string name="start_chatting">Start chatting</string>
+    <string name="proximity_queue_title">Proximity Queue</string>
+    <string name="app_icon_description">App icon</string>
+    <string name="queue_welcome_user_txt">Welcome%1$s. Please wait, we are searching for the closest match.</string>
+    <string name="chat_chatting_with_txt">Chatting with: %1$s</string>
+    <string name="chat_txt">Chat</string>
+    <string name="chat_metres_away_txt">%1$d metres away</string>
+    <string name="chat_type_your_message_label">Type your message.</string>
+    <string name="send_button_description">Send button</string>
+    <string name="back_button_description">Back button</string>
+    <string name="chat_user_disconnected_toast">Disconnected from the chat. Looking for another match.</string>
+    <string name="chat_no_people_in_queue_toast">There are no people in the queue at the moment. Please try again later.</string>
 </resources>

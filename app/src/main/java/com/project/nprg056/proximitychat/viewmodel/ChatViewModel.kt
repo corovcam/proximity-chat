@@ -11,7 +11,6 @@ import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 import com.project.nprg056.proximitychat.model.Message
 import com.project.nprg056.proximitychat.util.Constants
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 import kotlin.math.roundToInt
@@ -77,9 +76,9 @@ class ChatViewModel(
     }
 
     fun addMessage() {
-        val message: String = _message.value ?: throw IllegalArgumentException("message empty")
+        val message: String = _message.value ?: throw IllegalArgumentException("Message empty")
         if (message.isNotEmpty()) {
-            viewModelScope.launch(Dispatchers.IO) {
+            viewModelScope.launch {
                 db.child(Constants.MESSAGES).child(roomId!!).push().setValue(
                     Message(message, userId, ServerValue.TIMESTAMP)
                 ).addOnSuccessListener {

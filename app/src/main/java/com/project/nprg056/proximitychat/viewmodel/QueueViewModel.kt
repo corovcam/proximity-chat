@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import com.project.nprg056.proximitychat.R
 import com.project.nprg056.proximitychat.model.LocationDetail
 import com.project.nprg056.proximitychat.model.User
 import com.project.nprg056.proximitychat.util.Constants
@@ -44,11 +45,6 @@ class QueueViewModel(val context: Context) : ViewModel() {
         _loading.value = newLoadingStatus
     }
 
-    private fun showErrorMessage(message: String) {
-        _loading.value = false
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-    }
-
     // Register user
     fun registerUser(locationDetail: LocationDetail,
                      toQueue: () -> Unit,
@@ -74,7 +70,7 @@ class QueueViewModel(val context: Context) : ViewModel() {
         _userId.value = ""
     }
 
-    fun calcDistance(lat: Double, lon: Double): Float {
+    private fun calcDistance(lat: Double, lon: Double): Float {
         val locationA = Location("User 1")
         locationA.latitude = location.latitude!!
         locationA.longitude = location.longitude!!
@@ -116,7 +112,11 @@ class QueueViewModel(val context: Context) : ViewModel() {
                 committed: Boolean,
                 currentData: DataSnapshot?
             ){
-                if(databaseError == null && foundId != "") {
+                databaseError?.let { error ->
+                    Log.e("Firebase", "joinQueue Error: ${error.message}")
+                    return
+                }
+                if (foundId != "") {
                     val updates: MutableMap<String, Any> = hashMapOf(
                         "users/${userId.value}/roomId" to "${userId.value}___${foundId}",
                         "users/${foundId}/roomId" to "${userId.value}___${foundId}",
@@ -151,17 +151,19 @@ class QueueViewModel(val context: Context) : ViewModel() {
                     goBack()
                     joinQueue()
                     Toast.makeText(context,
-                        "Disconnected from the chat. Looking for another match.",
+                        context.getString(R.string.chat_user_disconnected_toast),
                         Toast.LENGTH_LONG)
                         .show()
                 }
             }
             override fun onCancelled(error: DatabaseError) {
                 // Failed to read value
-                Log.w("Get Chat Room failure", "Unsuccessful")
-                showErrorMessage(
-                    "There are no people in the queue at the moment. Please try again later."
-                )
+                Log.e("Firebase", "getChatRoom Error: ${error.message}")
+                _loading.value = false
+                Toast.makeText(context,
+                    context.getString(R.string.chat_no_people_in_queue_toast),
+                    Toast.LENGTH_LONG)
+                    .show()
             }
         }
 

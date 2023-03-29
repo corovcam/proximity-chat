@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -17,6 +18,7 @@ import com.project.nprg056.proximitychat.view.composables.Appbar
 import com.project.nprg056.proximitychat.view.composables.BackPressHandler
 import com.project.nprg056.proximitychat.view.composables.LoadingDialog
 import com.project.nprg056.proximitychat.viewmodel.QueueViewModel
+import com.project.nprg056.proximitychat.R
 
 @Composable
 fun QueueView(
@@ -42,7 +44,7 @@ fun QueueView(
                 modifier = Modifier.fillMaxSize()
             ) {
                 Appbar(
-                    title = "Proximity Queue",
+                    title = stringResource(R.string.proximity_queue_title),
                     action = {
                         queueViewModel.deleteUser()
                         goBack()
@@ -54,8 +56,10 @@ fun QueueView(
                     modifier = Modifier.fillMaxSize())
                 {
                     Text(
-                        text = "Welcome${if (userName.isEmpty()) "" else " $userName"}. " +
-                                "Please wait, we are searching for the closest match.",
+                        text = stringResource(
+                            R.string.queue_welcome_user_txt,
+                            if (userName.isEmpty()) "" else " $userName"
+                        ),
                         style = MaterialTheme.typography.headlineSmall,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(30.dp)

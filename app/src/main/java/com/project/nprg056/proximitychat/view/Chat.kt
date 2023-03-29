@@ -13,10 +13,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.project.nprg056.proximitychat.R
 import com.project.nprg056.proximitychat.util.Constants
 import com.project.nprg056.proximitychat.view.composables.Appbar
 import com.project.nprg056.proximitychat.view.composables.BackPressHandler
@@ -41,10 +43,16 @@ fun ChatView(chatViewModel: ChatViewModel = viewModel()) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Bottom
         ) {
+            val appBarTitle = if (otherUserName.isNotEmpty())
+                stringResource(R.string.chat_chatting_with_txt, otherUserName)
+            else
+                stringResource(R.string.chat_txt)
+            val appBarSubtitle = usersDistance?.let {
+                stringResource(R.string.chat_metres_away_txt, it)
+            }
             Appbar(
-                title = if (otherUserName.isNotEmpty())
-                    "Chatting with: $otherUserName" else "Chat",
-                subTitle = if (usersDistance != null) "$usersDistance metres away" else null,
+                title = appBarTitle,
+                subTitle = appBarSubtitle,
                 action = { chatViewModel.leaveChat() }
             )
             LazyColumn(
@@ -79,11 +87,9 @@ fun ChatView(chatViewModel: ChatViewModel = viewModel()) {
                 onValueChange = {
                     chatViewModel.updateMessage(it)
                 },
-                label = {
-                    Text(
-                        "Type Your Message"
-                    )
-                },
+                label = { Text(
+                    stringResource(R.string.chat_type_your_message_label)
+                ) },
                 maxLines = 1,
                 modifier = Modifier
                     .padding(horizontal = 15.dp, vertical = 1.dp)
@@ -104,7 +110,7 @@ fun ChatView(chatViewModel: ChatViewModel = viewModel()) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.Send,
-                            contentDescription = "Send Button"
+                            contentDescription = stringResource(R.string.send_button_description)
                         )
                     }
                 }

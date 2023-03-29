@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,11 +44,13 @@ fun SplashScreenView(home: () -> Unit) {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize().align(Alignment.Center)
+            modifier = Modifier
+                .fillMaxSize()
+                .align(Alignment.Center)
         ) {
             Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                contentDescription = "App Icon",
+                painter = painterResource(R.drawable.ic_launcher_foreground),
+                contentDescription = stringResource(R.string.app_icon_description),
                 modifier = Modifier
                     .requiredSize(300.dp)
                     .padding(40.dp)
@@ -55,14 +58,14 @@ fun SplashScreenView(home: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(15.dp))
             Text(
-                text = "Proximity Chat",
+                text = stringResource(R.string.app_name),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleLarge
             )
         }
 
         Text(
-            text = "Version - ${BuildConfig.VERSION_NAME}",
+            text = stringResource(R.string.version_text, BuildConfig.VERSION_NAME),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier
@@ -75,18 +78,36 @@ fun SplashScreenView(home: () -> Unit) {
 @Preview(showBackground = true, showSystemUi = true, device = Devices.PIXEL_3A)
 @Composable
 fun PreviewSplashScreen() {
-    Column(verticalArrangement = Arrangement.Center) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-            contentDescription = "App Icon",
-            alignment = Alignment.Center, modifier = Modifier
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp)
-        )
+                .align(Alignment.Center)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                contentDescription = "App Icon",
+                modifier = Modifier
+                    .requiredSize(300.dp)
+                    .padding(40.dp)
+            )
+            Spacer(modifier = Modifier.height(15.dp))
+            Text(
+                text = stringResource(R.string.app_name),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleLarge
+            )
+        }
+
         Text(
-            text = "asdas",
+            text = stringResource(R.string.app_name, BuildConfig.VERSION_NAME),
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
         )
     }
 }

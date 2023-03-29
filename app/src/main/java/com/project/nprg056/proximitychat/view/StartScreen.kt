@@ -14,6 +14,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -24,6 +25,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
+import com.project.nprg056.proximitychat.R
 import com.project.nprg056.proximitychat.model.LocationDetail
 import com.project.nprg056.proximitychat.view.composables.*
 import com.project.nprg056.proximitychat.viewmodel.QueueViewModel
@@ -46,6 +48,7 @@ fun StartScreenView(
         Manifest.permission.ACCESS_COARSE_LOCATION
     )
 
+    val checkGpsNetworkSettingsText = stringResource(R.string.check_gps_network_settings)
     val obtainCurrentLocation = {
         queueViewModel.updateLoadingStatus(true)
         fusedLocationClient
@@ -67,15 +70,13 @@ fun StartScreenView(
                         goBack = goBack
                     )
                 } else {
-                    Toast.makeText(
-                        context, "Check your GPS/Network settings and try again.",
-                        Toast.LENGTH_LONG)
-                        .show()
+                    Toast.makeText(context, checkGpsNetworkSettingsText, Toast.LENGTH_LONG).show()
                     queueViewModel.updateLoadingStatus(false)
                 }
             }
     }
 
+    val locationPermissionRequestText = stringResource(R.string.location_permission_request)
     val launcherMultiplePermissions = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissionsMap ->
@@ -85,8 +86,7 @@ fun StartScreenView(
             obtainCurrentLocation()
         } else {
             Log.w("Location Permission", "Location Permission Denied")
-            Toast.makeText(context, "Please turn on Location permission.", Toast.LENGTH_LONG)
-                .show()
+            Toast.makeText(context, locationPermissionRequestText, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -101,17 +101,17 @@ fun StartScreenView(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom
             ) {
-                Title(title = "Proximity Chat")
+                Title(title = stringResource(R.string.app_name))
                 InputTextField(
                     value = userName,
                     onValueChange = { queueViewModel.updateUserName(it) },
-                    label = "User Name",
+                    label = stringResource(R.string.user_name_label),
                     keyboardType = KeyboardType.Text,
                     visualTransformation = VisualTransformation.None
                 )
                 Spacer(modifier = Modifier.height(20.dp))
                 Buttons(
-                    title = "Start chatting",
+                    title = stringResource(R.string.start_chatting),
                     onClick = {
                         if (permissions.all {
                                 ContextCompat.checkSelfPermission(
