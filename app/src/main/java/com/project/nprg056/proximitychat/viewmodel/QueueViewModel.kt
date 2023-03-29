@@ -1,9 +1,7 @@
 package com.project.nprg056.proximitychat.viewmodel
 
-import android.content.Context
 import android.location.Location
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -19,7 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class QueueViewModel(val context: Context) : ViewModel() {
+class QueueViewModel : ViewModel() {
     private var db: DatabaseReference = Firebase.database(Constants.DB_URL).reference
     private val _userName = MutableLiveData("")
     val userName: LiveData<String> = _userName
@@ -49,14 +47,15 @@ class QueueViewModel(val context: Context) : ViewModel() {
     fun registerUser(locationDetail: LocationDetail,
                      toQueue: () -> Unit,
                      goBack: () -> Unit,
-                     toChat: (String, String) -> Unit
+                     toChat: (String, String) -> Unit,
+                     showInfoToast: (resId: Int) -> Unit
     ) {
         location = locationDetail
         viewModelScope.launch {
             _userId.value = db.push().key
             db.child("users").child(_userId.value.toString()).setValue(User(userName.value.toString()))
             _loading.value = false
-            getChatRoom(goBack, toChat)
+            getChatRoom(goBack, toChat, showInfoToast)
             withContext(Dispatchers.Main) {
                 toQueue()
             }
@@ -129,7 +128,11 @@ class QueueViewModel(val context: Context) : ViewModel() {
         })
     }
 
-    private fun getChatRoom(goBack: () -> Unit, toChat: (String, String) -> Unit) {
+    private fun getChatRoom(
+        goBack: () -> Unit,
+        toChat: (String, String) -> Unit,
+        showInfoToast: (resId: Int) -> Unit
+    ) {
         if (_loading.value == true)
             return
 
@@ -150,20 +153,14 @@ class QueueViewModel(val context: Context) : ViewModel() {
                 else if (visited.isNotEmpty()) {
                     goBack()
                     joinQueue()
-                    Toast.makeText(context,
-                        context.getString(R.string.chat_user_disconnected_toast),
-                        Toast.LENGTH_LONG)
-                        .show()
+                    showInfoToast(R.string.chat_user_disconnected_toast)
                 }
             }
             override fun onCancelled(error: DatabaseError) {
                 // Failed to read value
                 Log.e("Firebase", "getChatRoom Error: ${error.message}")
                 _loading.value = false
-                Toast.makeText(context,
-                    context.getString(R.string.chat_no_people_in_queue_toast),
-                    Toast.LENGTH_LONG)
-                    .show()
+                showInfoToast(R.string.chat_no_people_in_queue_toast)
             }
         }
 

@@ -84,7 +84,7 @@ class ChatViewModel(
                 ).addOnSuccessListener {
                     _message.value = ""
                 }.addOnFailureListener{
-                    Log.e("Firebase", "Error sending message", it)
+                    Log.e("Firebase", "addMessage Error", it)
                 }
             }
         }
@@ -101,7 +101,7 @@ class ChatViewModel(
 
                         for (doc in dataSnapshot.children) {
                             val data = doc.getValue<Map<String, Any>>()!!.toMutableMap()
-                            data[Constants.IS_CURRENT_USER] = data[Constants.SENT_BY] == userId
+                            data[Constants.IS_CURRENT_USER] = data[Constants.USER_ID] == userId
                             list.add(data)
                         }
 

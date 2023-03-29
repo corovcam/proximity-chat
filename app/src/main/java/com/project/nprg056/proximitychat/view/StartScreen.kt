@@ -67,7 +67,10 @@ fun StartScreenView(
                         LocationDetail(location.latitude, location.longitude),
                         toQueue = toQueue,
                         toChat = toChat,
-                        goBack = goBack
+                        goBack = goBack,
+                        showInfoToast = { resourceId ->
+                            Toast.makeText(context, resourceId, Toast.LENGTH_LONG).show()
+                        }
                     )
                 } else {
                     Toast.makeText(context, checkGpsNetworkSettingsText, Toast.LENGTH_LONG).show()
