@@ -15,17 +15,8 @@ import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 import kotlin.math.roundToInt
 
-class ChatViewModel(
-    private val roomId: String?,
-    private val userId: String?
-) : ViewModel() {
-    private var db: DatabaseReference = Firebase.database(Constants.DB_URL).reference
-
-    init {
-        getOtherUserName()
-        getUsersDistance()
-        getMessages()
-    }
+class ChatViewModel : ViewModel() {
+    private val db: DatabaseReference = Firebase.database(Constants.DB_URL).reference
 
     private val _otherUserName = MutableLiveData("")
     val otherUserName: LiveData<String> = _otherUserName
@@ -39,8 +30,19 @@ class ChatViewModel(
     private var _messages = MutableLiveData(emptyList<Map<String, Any>>().toMutableList())
     val messages: LiveData<MutableList<Map<String, Any>>> = _messages
 
+    private lateinit var roomId: String
+    private lateinit var userId: String
+
+    fun initChatViewModel(roomId: String, userId: String) {
+        this.roomId = roomId
+        this.userId = userId
+        getOtherUserName()
+        getUsersDistance()
+        getMessages()
+    }
+
     fun leaveChat() {
-        val userIds = roomId!!.split("___")
+        val userIds = roomId.split("___")
         for(id in userIds) {
             db.child("users/${id}/roomId").setValue("")
         }
@@ -50,7 +52,7 @@ class ChatViewModel(
     }
 
     private fun getOtherUserName() {
-        val userIds = roomId!!.split("___")
+        val userIds = roomId.split("___")
         for(id in userIds) {
             if (id != userId) {
                 db.child("users/${id}/userName")
@@ -63,7 +65,7 @@ class ChatViewModel(
     }
 
     private fun getUsersDistance() {
-        val userIds = roomId!!.split("___")
+        val userIds = roomId.split("___")
         for (id in userIds) {
             if (id != userId) {
                 db.child("users/${id}/usersDistance")
@@ -79,7 +81,7 @@ class ChatViewModel(
         val message: String = _message.value ?: throw IllegalArgumentException("Message empty")
         if (message.isNotEmpty()) {
             viewModelScope.launch {
-                db.child(Constants.MESSAGES).child(roomId!!).push().setValue(
+                db.child(Constants.MESSAGES).child(roomId).push().setValue(
                     Message(message, userId, ServerValue.TIMESTAMP)
                 ).addOnSuccessListener {
                     _message.value = ""
@@ -93,14 +95,14 @@ class ChatViewModel(
     private fun getMessages() {
         viewModelScope.launch {
             db.child(Constants.MESSAGES)
-                .child(roomId!!)
+                .child(roomId)
                 .orderByKey()
                 .addValueEventListener(object : ValueEventListener {
                     override fun onDataChange(dataSnapshot: DataSnapshot) {
                         val list = emptyList<Map<String, Any>>().toMutableList()
 
                         for (doc in dataSnapshot.children) {
-                            val data = doc.getValue<Map<String, Any>>()!!.toMutableMap()
+                            val data = doc.getValue<Map<String, Any>>()?.toMutableMap() ?: continue
                             data[Constants.IS_CURRENT_USER] = data[Constants.USER_ID] == userId
                             list.add(data)
                         }

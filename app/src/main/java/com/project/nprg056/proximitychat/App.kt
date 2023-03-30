@@ -1,5 +1,6 @@
 package com.project.nprg056.proximitychat
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -12,7 +13,6 @@ import com.project.nprg056.proximitychat.controller.Navigation
 import com.project.nprg056.proximitychat.util.Destination
 import com.project.nprg056.proximitychat.ui.theme.ProximityChatTheme
 import com.project.nprg056.proximitychat.view.*
-import com.project.nprg056.proximitychat.viewmodel.ChatViewModel
 import com.project.nprg056.proximitychat.viewmodel.QueueViewModel
 
 @Composable
@@ -54,11 +54,16 @@ fun App(
                     navArgument("userId") { defaultValue = "" }
                 )
             ) { backStackEntry ->
+                val roomId = backStackEntry.arguments?.getString("roomId")
+                val userId = backStackEntry.arguments?.getString("userId")
+                if (roomId == null || userId == null) {
+                    Log.e("Chat Navigation",
+                        "Invalid route. Either roomId or userId is empty.")
+                    return@composable
+                }
                 ChatView(
-                    chatViewModel = ChatViewModel(
-                        roomId = backStackEntry.arguments?.getString("roomId"),
-                        userId = backStackEntry.arguments?.getString("userId"),
-                    )
+                    roomId = roomId,
+                    userId = userId
                 )
             }
         }

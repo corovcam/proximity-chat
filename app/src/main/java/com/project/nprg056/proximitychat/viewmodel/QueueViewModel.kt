@@ -18,12 +18,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class QueueViewModel : ViewModel() {
-    private var db: DatabaseReference = Firebase.database(Constants.DB_URL).reference
+    private val db: DatabaseReference = Firebase.database(Constants.DB_URL).reference
+
     private val _userName = MutableLiveData("")
     val userName: LiveData<String> = _userName
-
-    private val _userId = MutableLiveData("")
-    val userId: LiveData<String> = _userId
 
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
@@ -31,6 +29,7 @@ class QueueViewModel : ViewModel() {
     private val visited = mutableSetOf<String>()
 
     private var location = LocationDetail(0.0,0.0)
+    private var userId: String = ""
 
     private lateinit var listener: ValueEventListener
 
@@ -51,9 +50,10 @@ class QueueViewModel : ViewModel() {
                      showInfoToast: (resId: Int) -> Unit
     ) {
         location = locationDetail
+        val userName = _userName.value ?: return
         viewModelScope.launch {
-            _userId.value = db.push().key
-            db.child("users").child(_userId.value.toString()).setValue(User(userName.value.toString()))
+            userId = db.push().key ?: return@launch
+            db.child("users").child(userId).setValue(User(userName))
             _loading.value = false
             getChatRoom(goBack, toChat, showInfoToast)
             withContext(Dispatchers.Main) {
@@ -63,16 +63,15 @@ class QueueViewModel : ViewModel() {
     }
 
     fun deleteUser() {
-        val userId = _userId.value
         db.child("users/${userId}/roomId").removeEventListener(listener)
         db.child("queue/${userId}").removeValue()
-        _userId.value = ""
+        userId = ""
     }
 
     private fun calcDistance(lat: Double, lon: Double): Float {
         val locationA = Location("User 1")
-        locationA.latitude = location.latitude!!
-        locationA.longitude = location.longitude!!
+        locationA.latitude = location.latitude
+        locationA.longitude = location.longitude
 
         val locationB = Location("User 2")
         locationB.latitude = lat
@@ -87,12 +86,13 @@ class QueueViewModel : ViewModel() {
         db.child("queue").runTransaction(object : Transaction.Handler {
             override fun doTransaction(mutableData: MutableData): Transaction.Result {
                 for (doc in mutableData.children) {
-                    if (visited.contains(doc.key))
+                    val key = doc.key ?: return Transaction.abort()
+                    if (visited.contains(key))
                         continue
-                    val loc = doc.getValue(LocationDetail::class.java)
-                    val dist = calcDistance(loc?.latitude!!, loc.longitude!!)
+                    val loc = doc.getValue(LocationDetail::class.java) ?: return Transaction.abort()
+                    val dist = calcDistance(loc.latitude, loc.longitude)
                     if(dist < distance) {
-                        foundId = doc.key!!
+                        foundId = key
                         distance = dist
                     }
                 }
@@ -100,7 +100,7 @@ class QueueViewModel : ViewModel() {
                 if(foundId != "")
                     mutableData.child(foundId).value = null
                 else
-                    mutableData.child(userId.value!!).value = location
+                    mutableData.child(userId).value = location
 
                 // Set value and report transaction success
                 return Transaction.success(mutableData)
@@ -115,11 +115,15 @@ class QueueViewModel : ViewModel() {
                     Log.e("Firebase", "joinQueue Error: ${error.message}")
                     return
                 }
+                if (!committed) {
+                    Log.e("Firebase", "joinQueue Transaction aborted")
+                    return
+                }
                 if (foundId != "") {
                     val updates: MutableMap<String, Any> = hashMapOf(
-                        "users/${userId.value}/roomId" to "${userId.value}___${foundId}",
-                        "users/${foundId}/roomId" to "${userId.value}___${foundId}",
-                        "users/${userId.value}/usersDistance" to distance.toDouble(),
+                        "users/${userId}/roomId" to "${userId}___${foundId}",
+                        "users/${foundId}/roomId" to "${userId}___${foundId}",
+                        "users/${userId}/usersDistance" to distance.toDouble(),
                         "users/${foundId}/usersDistance" to distance.toDouble()
                     )
                     db.updateChildren(updates)
@@ -144,11 +148,11 @@ class QueueViewModel : ViewModel() {
                 if (roomId != "") {
                     val userIds = roomId.split("___")
                     for (id in userIds) {
-                        if (id != userId.value) {
+                        if (id != userId) {
                             visited.add(id)
                         }
                     }
-                    toChat(roomId, userId.value!!)
+                    toChat(roomId, userId)
                 }
                 else if (visited.isNotEmpty()) {
                     goBack()
@@ -164,7 +168,7 @@ class QueueViewModel : ViewModel() {
             }
         }
 
-       db.child("users/${userId.value}/roomId").addValueEventListener(listener)
+       db.child("users/$userId/roomId").addValueEventListener(listener)
        joinQueue()
     }
 }

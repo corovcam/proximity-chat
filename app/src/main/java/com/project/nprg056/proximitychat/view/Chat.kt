@@ -1,5 +1,6 @@
 package com.project.nprg056.proximitychat.view
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -26,7 +28,16 @@ import com.project.nprg056.proximitychat.view.composables.SingleMessage
 import com.project.nprg056.proximitychat.viewmodel.ChatViewModel
 
 @Composable
-fun ChatView(chatViewModel: ChatViewModel = viewModel()) {
+fun ChatView(
+    roomId: String,
+    userId: String,
+    chatViewModel: ChatViewModel = viewModel()
+) {
+    LaunchedEffect(key1 = true) {
+        Log.w("LaunchedEffect", "roomId: $roomId, userId: $userId")
+        chatViewModel.initChatViewModel(roomId, userId)
+    }
+
     val message: String by chatViewModel.message.observeAsState(initial = "")
     val messages: List<Map<String, Any>> by chatViewModel.messages.observeAsState(
         initial = emptyList<Map<String, Any>>().toMutableList()
