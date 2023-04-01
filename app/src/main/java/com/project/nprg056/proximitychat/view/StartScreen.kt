@@ -21,12 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.tasks.CancellationToken
-import com.google.android.gms.tasks.CancellationTokenSource
-import com.google.android.gms.tasks.OnTokenCanceledListener
 import com.project.nprg056.proximitychat.R
-import com.project.nprg056.proximitychat.model.LocationDetail
 import com.project.nprg056.proximitychat.view.composables.*
 import com.project.nprg056.proximitychat.viewmodel.QueueViewModel
 
@@ -43,43 +38,18 @@ fun StartScreenView(
     val loading: Boolean by queueViewModel.loading.observeAsState(initial = false)
 
     val context = LocalContext.current
-    val permissions = arrayOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION
-    )
-
-    val checkGpsNetworkSettingsText = stringResource(R.string.check_gps_network_settings)
-    val obtainCurrentLocation = {
-        queueViewModel.updateLoadingStatus(true)
-        fusedLocationClient
-            .getCurrentLocation(
-                LocationRequest.PRIORITY_HIGH_ACCURACY,
-                object : CancellationToken() {
-                    override fun onCanceledRequested(p0: OnTokenCanceledListener) =
-                        CancellationTokenSource().token
-                    override fun isCancellationRequested() = false
-                }
-            )
-            .addOnSuccessListener { location ->
-                if (location != null) {
-                    Log.w("Location", "${location.latitude} ${location.longitude}")
-                    queueViewModel.registerUser(
-                        LocationDetail(location.latitude, location.longitude),
-                        toQueue = toQueue,
-                        toChat = toChat,
-                        goBack = goBack,
-                        showInfoToast = { resourceId ->
-                            Toast.makeText(context, resourceId, Toast.LENGTH_LONG).show()
-                        }
-                    )
-                } else {
-                    Toast.makeText(context, checkGpsNetworkSettingsText, Toast.LENGTH_LONG).show()
-                    queueViewModel.updateLoadingStatus(false)
-                }
-            }
+    val showInfoToast: (Int) -> Unit = { resourceId ->
+        Toast.makeText(context, resourceId, Toast.LENGTH_LONG).show()
     }
-
-    val locationPermissionRequestText = stringResource(R.string.location_permission_request)
+    val obtainCurrentLocation: () -> Unit = {
+        queueViewModel.obtainCurrentLocation(
+            fusedLocationClient,
+            toQueue = toQueue,
+            toChat = toChat,
+            goBack = goBack,
+            showInfoToast = showInfoToast
+        )
+    }
     val launcherMultiplePermissions = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissionsMap ->
@@ -89,7 +59,7 @@ fun StartScreenView(
             obtainCurrentLocation()
         } else {
             Log.w("Location Permission", "Location Permission Denied")
-            Toast.makeText(context, locationPermissionRequestText, Toast.LENGTH_LONG).show()
+            Toast.makeText(context, R.string.location_permission_request, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -116,6 +86,10 @@ fun StartScreenView(
                 Buttons(
                     title = stringResource(R.string.start_chatting),
                     onClick = {
+                        val permissions = arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        )
                         if (permissions.all {
                                 ContextCompat.checkSelfPermission(
                                     context,

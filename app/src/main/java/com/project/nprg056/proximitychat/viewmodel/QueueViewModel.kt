@@ -1,11 +1,17 @@
 package com.project.nprg056.proximitychat.viewmodel
 
+import android.annotation.SuppressLint
 import android.location.Location
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.tasks.CancellationToken
+import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.android.gms.tasks.OnTokenCanceledListener
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
@@ -38,16 +44,13 @@ class QueueViewModel : ViewModel() {
         _userName.value = newUserName
     }
 
-    fun updateLoadingStatus(newLoadingStatus: Boolean) {
-        _loading.value = newLoadingStatus
-    }
-
     // Register user
-    fun registerUser(locationDetail: LocationDetail,
-                     toQueue: () -> Unit,
-                     goBack: () -> Unit,
-                     toChat: (String, String) -> Unit,
-                     showInfoToast: (resId: Int) -> Unit
+    private fun registerUser(
+        locationDetail: LocationDetail,
+        toQueue: () -> Unit,
+        goBack: () -> Unit,
+        toChat: (String, String) -> Unit,
+        showInfoToast: (resId: Int) -> Unit
     ) {
         location = locationDetail
         val userName = _userName.value ?: return
@@ -170,5 +173,40 @@ class QueueViewModel : ViewModel() {
 
        db.child("users/$userId/roomId").addValueEventListener(listener)
        joinQueue()
+    }
+
+    @SuppressLint("MissingPermission")
+    fun obtainCurrentLocation(
+        fusedLocationClient: FusedLocationProviderClient,
+        toQueue: () -> Unit,
+        goBack: () -> Unit,
+        toChat: (String, String) -> Unit,
+        showInfoToast: (resId: Int) -> Unit
+    ) {
+        _loading.value = true
+        fusedLocationClient
+            .getCurrentLocation(
+                LocationRequest.PRIORITY_HIGH_ACCURACY,
+                object : CancellationToken() {
+                    override fun onCanceledRequested(p0: OnTokenCanceledListener) =
+                        CancellationTokenSource().token
+                    override fun isCancellationRequested() = false
+                }
+            )
+            .addOnSuccessListener { location ->
+                if (location != null) {
+                    Log.w("Location", "${location.latitude} ${location.longitude}")
+                    registerUser(
+                        LocationDetail(location.latitude, location.longitude),
+                        toQueue = toQueue,
+                        toChat = toChat,
+                        goBack = goBack,
+                        showInfoToast = showInfoToast
+                    )
+                } else {
+                    showInfoToast(R.string.check_gps_network_settings)
+                    _loading.value = false
+                }
+            }
     }
 }
