@@ -1,10 +1,7 @@
 package com.project.nprg056.proximitychat.viewmodel
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
@@ -15,7 +12,10 @@ import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 import kotlin.math.roundToInt
 
-class ChatViewModel : ViewModel() {
+class ChatViewModel(
+    private val roomId: String,
+    private val userId: String
+) : ViewModel() {
     private val db: DatabaseReference = Firebase.database(Constants.DB_URL).reference
 
     private val _otherUserName = MutableLiveData("")
@@ -30,12 +30,7 @@ class ChatViewModel : ViewModel() {
     private var _messages = MutableLiveData(emptyList<Map<String, Any>>().toMutableList())
     val messages: LiveData<MutableList<Map<String, Any>>> = _messages
 
-    private lateinit var roomId: String
-    private lateinit var userId: String
-
-    fun initChatViewModel(roomId: String, userId: String) {
-        this.roomId = roomId
-        this.userId = userId
+    init {
         getOtherUserName()
         getUsersDistance()
         getMessages()
@@ -120,5 +115,21 @@ class ChatViewModel : ViewModel() {
 
     private fun updateMessages(list: MutableList<Map<String, Any>>) {
         _messages.value = list.asReversed()
+    }
+
+    companion object {
+        fun provideFactory(roomId: String, userId: String): ViewModelProvider.Factory {
+            return object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(
+                    modelClass: Class<T>
+                ): T {
+                    if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
+                        return ChatViewModel(roomId, userId) as T
+                    }
+                    throw IllegalArgumentException("Unknown ViewModel class")
+                }
+            }
+        }
     }
 }
